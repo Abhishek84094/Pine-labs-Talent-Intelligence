@@ -24,20 +24,15 @@ settings = get_settings()
 
 
 def extract_json_from_response(text: str) -> dict:
-    """Extract JSON from LLM response, handling markdown code blocks"""
-    # Strip markdown code blocks
+    """Extract JSON from LLM response, handling markdown code blocks and repair"""
     text = text.strip()
     if text.startswith("```"):
         lines = text.split("\n")
-        # Remove first and last lines if they're code fences
         if lines[0].startswith("```"):
             lines = lines[1:]
         if lines and lines[-1].strip() == "```":
             lines = lines[:-1]
-        text = "\n".join(lines)
-
-    # Try to find JSON object
-    text = text.strip()
+        text = "\n".join(lines).strip()
 
     # Try direct parse first
     try:
@@ -53,6 +48,15 @@ def extract_json_from_response(text: str) -> dict:
             return json.loads(text[start:end + 1])
         except json.JSONDecodeError:
             pass
+
+    # Try json_repair for truncated or slightly malformed JSON
+    try:
+        import json_repair
+        repaired = json_repair.repair_json(text, return_objects=True)
+        if isinstance(repaired, dict):
+            return repaired
+    except Exception:
+        pass
 
     raise ValueError(f"Could not extract valid JSON from response. First 200 chars: {text[:200]}")
 
@@ -101,7 +105,8 @@ def analyze_resume(resume_text: str) -> tuple[ResumeAnalysis, list[str]]:
         return analysis, warnings
 
     except ValueError as e:
-        msg = f"Groq API not configured: {str(e)}"
+        err_str = str(e)
+        msg = f"Groq API not configured: {err_str}" if "not configured" in err_str.lower() else f"Resume extraction error: {err_str}"
         logger.error(msg)
         warnings.append(msg)
         return ResumeAnalysis(extraction_warnings=[msg]), warnings
@@ -156,7 +161,8 @@ def analyze_project(
         return analysis, warnings
 
     except ValueError as e:
-        msg = f"Groq API not configured: {str(e)}"
+        err_str = str(e)
+        msg = f"Groq API not configured: {err_str}" if "not configured" in err_str.lower() else f"Project analysis error: {err_str}"
         logger.error(msg)
         warnings.append(msg)
         return ProjectAnalysis(warnings=[msg]), warnings
@@ -223,7 +229,8 @@ def synthesize_report(
         return report, warnings
 
     except ValueError as e:
-        msg = f"Groq API not configured: {str(e)}"
+        err_str = str(e)
+        msg = f"Groq API not configured: {err_str}" if "not configured" in err_str.lower() else f"Report synthesis error: {err_str}"
         logger.error(msg)
         warnings.append(msg)
     except Exception as e:

@@ -13,7 +13,7 @@ class Settings(BaseSettings):
 
     # LLM
     groq_api_key: str = ""
-    groq_model: str = "openai/gpt-oss-120b"
+    groq_model: str = "openai/gpt-oss-20b"
 
     # Database
     database_url: str = "sqlite+aiosqlite:///./pine_labs_talent.db"
@@ -33,9 +33,9 @@ class Settings(BaseSettings):
     frontend_origin: str = "http://localhost:5173"
 
     # LLM limits
-    max_resume_text_chars: int = 15000
-    max_project_context_chars: int = 40000
-    max_single_file_chars: int = 8000
+    max_resume_text_chars: int = 8000
+    max_project_context_chars: int = 15000
+    max_single_file_chars: int = 4000
     llm_timeout_seconds: int = 120
     llm_max_retries: int = 3
 
