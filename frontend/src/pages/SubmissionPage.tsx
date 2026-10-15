@@ -136,7 +136,7 @@ export default function SubmissionPage() {
 
   return (
     <div className="min-h-screen bg-pine-cream">
-      <Header showDashboardLink />
+      <Header />
 
       {/* Hero */}
       <div className="bg-pine-navy text-white">
