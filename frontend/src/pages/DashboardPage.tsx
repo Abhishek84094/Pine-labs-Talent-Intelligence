@@ -3,9 +3,13 @@ import { Link, useNavigate } from 'react-router-dom'
 import {
   BarChart2, Users, Clock, CheckCircle, XCircle, Search,
   Filter, RefreshCw, Trash2, ExternalLink, AlertCircle,
-  ChevronRight, FileText,
+  ChevronRight, FileText, CheckSquare, Square, Mail,
+  UserCheck, ShieldCheck, Send, Sparkles, CheckCircle2,
+  Calendar, Award
 } from 'lucide-react'
-import Header from '../components/Header'
+import Navbar from '../components/Navbar'
+import InvitationModal from '../components/InvitationModal'
+import ReviewChecklistModal from '../components/ReviewChecklistModal'
 import { submissionApi } from '../services/api'
 import type { SubmissionListItem, Stats, ProcessingStatus } from '../types'
 
@@ -49,9 +53,18 @@ export default function DashboardPage() {
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [reviewFilter, setReviewFilter] = useState('')
   const [total, setTotal] = useState(0)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [retryingId, setRetryingId] = useState<string | null>(null)
+
+  // Selection state for batch actions
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+  // Modal states
+  const [checklistCandidate, setChecklistCandidate] = useState<SubmissionListItem | null>(null)
+  const [invitationCandidates, setInvitationCandidates] = useState<SubmissionListItem[] | null>(null)
+  const [actionSuccessMessage, setActionSuccessMessage] = useState('')
 
   const fetchData = async () => {
     try {
@@ -61,6 +74,7 @@ export default function DashboardPage() {
         submissionApi.listSubmissions({
           search: search || undefined,
           status: statusFilter || undefined,
+          review_status: reviewFilter || undefined,
         }),
         submissionApi.getStats(),
       ])
@@ -76,7 +90,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchData()
-  }, [search, statusFilter])
+  }, [search, statusFilter, reviewFilter])
 
   // Auto-refresh every 10s if there are in-progress evaluations
   useEffect(() => {
@@ -93,6 +107,11 @@ export default function DashboardPage() {
     try {
       await submissionApi.deleteSubmission(id)
       setDeleteId(null)
+      setSelectedIds(prev => {
+        const next = new Set(prev)
+        next.delete(id)
+        return next
+      })
       fetchData()
     } catch (err) {
       alert('Failed to delete submission')
@@ -111,36 +130,122 @@ export default function DashboardPage() {
     }
   }
 
+  // Selection toggle
+  const toggleSelect = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === submissions.length) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(submissions.map(s => s.id)))
+    }
+  }
+
+  // Quick single-candidate review toggle
+  const handleQuickReviewToggle = async (sub: SubmissionListItem, e: React.MouseEvent) => {
+    e.stopPropagation()
+    const nextStatus = sub.review_status === 'reviewed' ? 'pending' : 'reviewed'
+    try {
+      await submissionApi.updateReview(sub.id, {
+        review_status: nextStatus,
+        reviewed_by: 'Hiring Team',
+      })
+      showSuccess(nextStatus === 'reviewed' ? `Marked ${sub.full_name} as Reviewed` : `Reverted ${sub.full_name} to Pending`)
+      fetchData()
+    } catch (err) {
+      alert('Failed to update review status')
+    }
+  }
+
+  // Batch review action
+  const handleBatchMarkReviewed = async () => {
+    if (selectedIds.size === 0) return
+    try {
+      await submissionApi.batchUpdateReview(Array.from(selectedIds), 'reviewed', 'Hiring Team')
+      showSuccess(`Marked ${selectedIds.size} candidates as Reviewed`)
+      setSelectedIds(new Set())
+      fetchData()
+    } catch (err) {
+      alert('Failed to update candidates')
+    }
+  }
+
+  // Batch shortlist invitation action
+  const handleBatchInvite = () => {
+    const selected = submissions.filter(s => selectedIds.has(s.id))
+    if (selected.length === 0) return
+    setInvitationCandidates(selected)
+  }
+
+  const showSuccess = (msg: string) => {
+    setActionSuccessMessage(msg)
+    setTimeout(() => setActionSuccessMessage(''), 4000)
+  }
+
+  const selectedCandidates = submissions.filter(s => selectedIds.has(s.id))
+
   return (
-    <div className="min-h-screen bg-pine-cream">
-      <Header showSubmitLink />
+    <div className="min-h-screen bg-pine-cream pb-24">
+      <Navbar variant="dashboard" />
 
       {/* Page header */}
-      <div className="bg-pine-navy text-white">
+      <div className="bg-pine-forest-deep text-white">
         <div className="max-w-6xl mx-auto px-6 py-8">
-          <h1 className="text-2xl font-bold text-white">Hiring Dashboard</h1>
-          <p className="text-pine-slate-light text-sm mt-1">
-            Review candidate applications and AI-generated evaluations
-          </p>
+          <div className="flex items-center gap-2 text-pine-lime text-xs font-semibold mb-2 uppercase tracking-widest">
+            <div className="w-4 h-px bg-pine-lime" />
+            Hiring Team Portal
+          </div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">Talent Intelligence Dashboard</h1>
+              <p className="text-white/60 text-sm mt-1">
+                Review candidate evaluations, tick review checklists, and shortlist for interview rounds.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link to="/submit" className="btn-primary text-xs flex items-center gap-1.5 shadow-sm">
+                + New Application
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto px-6 py-8">
-        {/* Stats */}
+        {/* Success Alert Banner */}
+        {actionSuccessMessage && (
+          <div className="p-4 bg-pine-lime/20 border border-pine-lime text-pine-forest rounded-xl flex items-center gap-3 mb-6 animate-fade-in shadow-xs">
+            <CheckCircle2 size={18} className="text-pine-forest flex-shrink-0" />
+            <p className="text-sm font-semibold">{actionSuccessMessage}</p>
+          </div>
+        )}
+
+        {/* Stats Grid */}
         {stats && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
             {[
-              { label: 'Total Submissions', value: stats.total, icon: Users, color: 'text-pine-navy' },
-              { label: 'Pending', value: stats.pending, icon: Clock, color: 'text-status-pending' },
-              { label: 'Completed', value: stats.completed, icon: CheckCircle, color: 'text-pine-green' },
-              { label: 'Failed', value: stats.failed, icon: XCircle, color: 'text-status-error' },
+              { label: 'Total Submissions', value: stats.total, icon: Users, color: 'text-pine-forest' },
+              { label: 'Evaluations Completed', value: stats.completed, icon: CheckCircle, color: 'text-pine-forest' },
+              { label: 'Reviewed by Team', value: stats.reviewed ?? 0, icon: CheckSquare, color: 'text-blue-600' },
+              { label: 'Shortlisted for Next Round', value: stats.shortlisted ?? 0, icon: Award, color: 'text-emerald-700' },
             ].map(({ label, value, icon: Icon, color }) => (
               <div key={label} className="stat-card">
-                <div className={`w-10 h-10 rounded-xl bg-pine-cream flex items-center justify-center flex-shrink-0`}>
+                <div className="w-10 h-10 rounded-xl bg-pine-cream flex items-center justify-center flex-shrink-0">
                   <Icon size={20} className={color} />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-pine-navy">{value}</p>
+                  <p className="text-2xl font-bold text-pine-forest">{value}</p>
                   <p className="text-xs text-pine-slate-light font-medium">{label}</p>
                 </div>
               </div>
@@ -148,40 +253,61 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Filters */}
-        <div className="card p-4 mb-4 flex flex-col sm:flex-row gap-3">
+        {/* Search & Filter Bar */}
+        <div className="card p-4 mb-6 flex flex-col md:flex-row gap-3">
           <div className="relative flex-1">
             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-pine-slate-light" />
             <input
               type="text"
-              placeholder="Search by name, email, or reference ID..."
+              placeholder="Search by candidate name, email, or reference ID..."
               className="input-field pl-10"
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <div className="relative">
-            <Filter size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-pine-slate-light" />
-            <select
-              className="input-field pl-10 pr-8 w-full sm:w-48"
-              value={statusFilter}
-              onChange={e => setStatusFilter(e.target.value)}
-            >
-              <option value="">All Statuses</option>
-              <option value="queued">Queued</option>
-              <option value="analyzing_resume">Analyzing</option>
-              <option value="completed">Completed</option>
-              <option value="partial">Partial</option>
-              <option value="failed">Failed</option>
-            </select>
+
+          <div className="flex flex-wrap sm:flex-nowrap gap-3">
+            {/* Review Status Filter */}
+            <div className="relative w-full sm:w-44">
+              <CheckSquare size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-pine-slate-light" />
+              <select
+                className="input-field pl-10 pr-8 w-full text-xs"
+                value={reviewFilter}
+                onChange={e => setReviewFilter(e.target.value)}
+              >
+                <option value="">All Review Statuses</option>
+                <option value="pending">Needs Review</option>
+                <option value="reviewed">Reviewed</option>
+                <option value="shortlisted">Shortlisted</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+
+            {/* Evaluation Status Filter */}
+            <div className="relative w-full sm:w-40">
+              <Filter size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-pine-slate-light" />
+              <select
+                className="input-field pl-10 pr-8 w-full text-xs"
+                value={statusFilter}
+                onChange={e => setStatusFilter(e.target.value)}
+              >
+                <option value="">All Evaluations</option>
+                <option value="completed">Completed</option>
+                <option value="queued">Queued</option>
+                <option value="analyzing_resume">Analyzing</option>
+                <option value="partial">Partial</option>
+                <option value="failed">Failed</option>
+              </select>
+            </div>
+
+            <button onClick={fetchData} className="btn-secondary flex-shrink-0 text-xs" title="Refresh">
+              <RefreshCw size={14} />
+              Refresh
+            </button>
           </div>
-          <button onClick={fetchData} className="btn-secondary flex-shrink-0" title="Refresh">
-            <RefreshCw size={16} />
-            Refresh
-          </button>
         </div>
 
-        {/* Error */}
+        {/* Error message */}
         {error && (
           <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 mb-4">
             <AlertCircle size={16} className="text-status-error" />
@@ -189,8 +315,8 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Table */}
-        <div className="card overflow-hidden">
+        {/* Candidates Table */}
+        <div className="card overflow-hidden shadow-sm">
           {loading && !submissions.length ? (
             <div className="flex items-center justify-center py-20">
               <div className="spinner w-8 h-8" />
@@ -201,13 +327,12 @@ export default function DashboardPage() {
               <div className="w-16 h-16 bg-pine-cream rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <FileText size={28} className="text-pine-slate-light" />
               </div>
-              <h3 className="text-lg font-bold text-pine-navy">No submissions yet</h3>
+              <h3 className="text-lg font-bold text-pine-forest">No submissions found</h3>
               <p className="text-sm text-pine-slate-light mt-2 max-w-md mx-auto">
-                When candidates submit their applications through the submission portal, they'll
-                appear here with their AI-generated evaluation reports.
+                No candidate applications match your current filters. Clear filters or submit a new application.
               </p>
-              <Link to="/" className="btn-primary mt-6 inline-flex">
-                Open Submission Portal
+              <Link to="/submit" className="btn-primary mt-6 inline-flex">
+                Open Application Form
               </Link>
             </div>
           ) : (
@@ -215,96 +340,214 @@ export default function DashboardPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-pine-border bg-pine-cream">
-                      <th className="text-left px-6 py-3 text-xs font-semibold text-pine-slate-light uppercase tracking-wider">Candidate</th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-pine-slate-light uppercase tracking-wider hidden sm:table-cell">Role</th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-pine-slate-light uppercase tracking-wider">Status</th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-pine-slate-light uppercase tracking-wider hidden md:table-cell">Submitted</th>
-                      <th className="text-right px-6 py-3 text-xs font-semibold text-pine-slate-light uppercase tracking-wider">Actions</th>
+                    <tr className="border-b border-pine-border bg-pine-cream/70 text-left">
+                      {/* Checkbox select all */}
+                      <th className="w-10 px-4 py-3.5 text-center">
+                        <button
+                          type="button"
+                          onClick={toggleSelectAll}
+                          className="text-pine-forest hover:text-pine-slate focus:outline-hidden"
+                          title="Select / Deselect all"
+                        >
+                          {selectedIds.size > 0 && selectedIds.size === submissions.length ? (
+                            <div className="w-4 h-4 rounded bg-pine-forest text-pine-lime flex items-center justify-center mx-auto">
+                              <CheckCircle2 size={14} />
+                            </div>
+                          ) : selectedIds.size > 0 ? (
+                            <div className="w-4 h-4 rounded bg-pine-forest text-pine-lime flex items-center justify-center mx-auto text-[10px] font-bold">
+                              -
+                            </div>
+                          ) : (
+                            <Square size={16} className="text-pine-slate-light mx-auto" />
+                          )}
+                        </button>
+                      </th>
+                      <th className="px-4 py-3.5 text-xs font-bold text-pine-slate-light uppercase tracking-wider">Candidate</th>
+                      <th className="px-4 py-3.5 text-xs font-bold text-pine-slate-light uppercase tracking-wider hidden md:table-cell">Job Role</th>
+                      <th className="px-4 py-3.5 text-xs font-bold text-pine-slate-light uppercase tracking-wider">AI Evaluation</th>
+                      <th className="px-4 py-3.5 text-xs font-bold text-pine-slate-light uppercase tracking-wider">Hiring Review</th>
+                      <th className="text-right px-6 py-3.5 text-xs font-bold text-pine-slate-light uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {submissions.map((sub) => (
-                      <tr
-                        key={sub.id}
-                        className="border-b border-pine-border last:border-0 hover:bg-pine-cream transition-colors cursor-pointer"
-                        onClick={() => navigate(`/report/${sub.id}`)}
-                      >
-                        <td className="px-6 py-4">
-                          <div>
-                            <p className="text-sm font-semibold text-pine-navy">{sub.full_name}</p>
-                            <p className="text-xs text-pine-slate-light">{sub.email}</p>
-                            <p className="text-xs font-mono text-pine-slate-light mt-0.5">{sub.reference_id}</p>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 hidden sm:table-cell">
-                          <p className="text-sm text-pine-navy">{sub.job_role}</p>
-                        </td>
-                        <td className="px-4 py-4">
-                          <span className={`badge ${STATUS_COLORS[sub.status as ProcessingStatus] || 'badge-pending'}`}>
-                            {STATUS_LABELS[sub.status as ProcessingStatus] || sub.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4 hidden md:table-cell">
-                          <p className="text-xs text-pine-slate-light">{formatDate(sub.submitted_at)}</p>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center justify-end gap-2" onClick={e => e.stopPropagation()}>
-                            {(sub.status === 'completed' || sub.status === 'partial') && (
-                              <Link
-                                to={`/report/${sub.id}`}
-                                className="btn-ghost text-xs py-1 px-2"
-                                title="View report"
-                              >
-                                <ExternalLink size={13} />
-                                Report
-                              </Link>
-                            )}
-                            {(sub.status === 'failed' || sub.status === 'partial') && (
+                    {submissions.map((sub) => {
+                      const isSelected = selectedIds.has(sub.id)
+                      const isReviewed = sub.review_status === 'reviewed' || sub.review_status === 'shortlisted'
+                      const isShortlisted = sub.review_status === 'shortlisted'
+
+                      return (
+                        <tr
+                          key={sub.id}
+                          className={`border-b border-pine-border last:border-0 transition-colors cursor-pointer ${
+                            isSelected ? 'bg-pine-lime/10' : 'hover:bg-pine-cream/60'
+                          }`}
+                          onClick={() => navigate(`/report/${sub.id}`)}
+                        >
+                          {/* Row selection checkbox */}
+                          <td className="w-10 px-4 py-4 text-center" onClick={e => toggleSelect(sub.id, e)}>
+                            <button
+                              type="button"
+                              className="text-pine-forest hover:text-pine-slate focus:outline-hidden"
+                            >
+                              {isSelected ? (
+                                <div className="w-4 h-4 rounded bg-pine-forest text-pine-lime flex items-center justify-center mx-auto">
+                                  <CheckCircle2 size={14} />
+                                </div>
+                              ) : (
+                                <Square size={16} className="text-pine-slate-light mx-auto" />
+                              )}
+                            </button>
+                          </td>
+
+                          {/* Candidate info */}
+                          <td className="px-4 py-4">
+                            <div>
+                              <p className="text-sm font-bold text-pine-forest flex items-center gap-2">
+                                {sub.full_name}
+                                {sub.email_sent && (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded-sm" title="Shortlist invitation email sent">
+                                    <Mail size={10} /> Invited
+                                  </span>
+                                )}
+                              </p>
+                              <p className="text-xs text-pine-slate-light">{sub.email}</p>
+                              <p className="text-[11px] font-mono text-pine-slate-light/80 mt-0.5">{sub.reference_id}</p>
+                            </div>
+                          </td>
+
+                          {/* Role */}
+                          <td className="px-4 py-4 hidden md:table-cell">
+                            <p className="text-sm font-medium text-pine-forest">{sub.job_role}</p>
+                            <p className="text-[11px] text-pine-slate-light">{formatDate(sub.submitted_at)}</p>
+                          </td>
+
+                          {/* AI Evaluation Status */}
+                          <td className="px-4 py-4">
+                            <span className={`badge ${STATUS_COLORS[sub.status as ProcessingStatus] || 'badge-pending'}`}>
+                              {STATUS_LABELS[sub.status as ProcessingStatus] || sub.status}
+                            </span>
+                          </td>
+
+                          {/* Review Checklist Status */}
+                          <td className="px-4 py-4" onClick={e => e.stopPropagation()}>
+                            <div className="flex items-center gap-2">
+                              {/* Quick toggle button */}
                               <button
-                                onClick={() => handleRetry(sub.id)}
-                                className="btn-ghost text-xs py-1 px-2"
-                                disabled={retryingId === sub.id}
-                                title="Retry evaluation"
+                                type="button"
+                                onClick={(e) => handleQuickReviewToggle(sub, e)}
+                                className={`w-6 h-6 rounded-md flex items-center justify-center transition-all ${
+                                  isReviewed
+                                    ? 'bg-pine-forest text-pine-lime'
+                                    : 'border border-pine-border text-pine-slate-light hover:border-pine-forest'
+                                }`}
+                                title={isReviewed ? 'Marked as Reviewed (Click to revert)' : 'Click to mark as Reviewed'}
                               >
-                                <RefreshCw size={13} className={retryingId === sub.id ? 'animate-spin' : ''} />
-                                Retry
+                                {isReviewed ? <CheckCircle2 size={16} /> : <Square size={16} />}
                               </button>
-                            )}
-                            {deleteId === sub.id ? (
-                              <div className="flex items-center gap-1">
-                                <button
-                                  onClick={() => handleDelete(sub.id)}
-                                  className="text-xs text-status-error font-semibold hover:underline"
-                                >
-                                  Confirm
-                                </button>
-                                <button
-                                  onClick={() => setDeleteId(null)}
-                                  className="text-xs text-pine-slate-light hover:underline"
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            ) : (
+
+                              {/* Review badge & checklist trigger */}
                               <button
-                                onClick={() => setDeleteId(sub.id)}
-                                className="btn-ghost text-xs py-1 px-2 text-status-error"
-                                title="Delete"
+                                type="button"
+                                onClick={() => setChecklistCandidate(sub)}
+                                className="text-left group"
+                                title="Open Review Checklist"
                               >
-                                <Trash2 size={13} />
+                                {isShortlisted ? (
+                                  <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-pine-lime text-pine-forest group-hover:underline">
+                                    <Sparkles size={11} /> Shortlisted
+                                  </span>
+                                ) : sub.review_status === 'reviewed' ? (
+                                  <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 group-hover:underline">
+                                    <CheckCircle size={11} /> Reviewed
+                                  </span>
+                                ) : sub.review_status === 'rejected' ? (
+                                  <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-800 group-hover:underline">
+                                    Rejected
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200">
+                                    Needs Review
+                                  </span>
+                                )}
                               </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                            </div>
+                          </td>
+
+                          {/* Actions */}
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5" onClick={e => e.stopPropagation()}>
+                              {/* Checklist button */}
+                              <button
+                                type="button"
+                                onClick={() => setChecklistCandidate(sub)}
+                                className="btn-ghost text-xs py-1 px-2 text-pine-forest hover:bg-pine-cream"
+                                title="Review Checklist"
+                              >
+                                <CheckSquare size={13} />
+                                <span className="hidden lg:inline">Checklist</span>
+                              </button>
+
+                              {/* Invite / Shortlist single candidate */}
+                              <button
+                                type="button"
+                                onClick={() => setInvitationCandidates([sub])}
+                                className="btn-ghost text-xs py-1 px-2 text-pine-forest hover:bg-pine-lime/30"
+                                title="Send Shortlist Email"
+                              >
+                                <Mail size={13} />
+                                <span className="hidden lg:inline">Send Mail</span>
+                              </button>
+
+                              {/* View Report */}
+                              {(sub.status === 'completed' || sub.status === 'partial') && (
+                                <Link
+                                  to={`/report/${sub.id}`}
+                                  className="btn-ghost text-xs py-1 px-2"
+                                  title="View full report"
+                                >
+                                  <ExternalLink size={13} />
+                                  <span className="hidden sm:inline">Report</span>
+                                </Link>
+                              )}
+
+                              {/* Delete */}
+                              {deleteId === sub.id ? (
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    onClick={() => handleDelete(sub.id)}
+                                    className="text-xs text-status-error font-semibold hover:underline"
+                                  >
+                                    Confirm
+                                  </button>
+                                  <button
+                                    onClick={() => setDeleteId(null)}
+                                    className="text-xs text-pine-slate-light hover:underline"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => setDeleteId(sub.id)}
+                                  className="btn-ghost text-xs py-1 px-1.5 text-status-error"
+                                  title="Delete"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>
-              <div className="px-6 py-3 border-t border-pine-border flex items-center justify-between">
+
+              {/* Table footer */}
+              <div className="px-6 py-3 border-t border-pine-border flex items-center justify-between bg-pine-cream/40">
                 <p className="text-xs text-pine-slate-light">
-                  Showing {submissions.length} of {total} submissions
+                  Showing {submissions.length} of {total} candidates
                 </p>
                 {loading && <div className="spinner w-4 h-4" />}
               </div>
@@ -313,13 +556,60 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Delete modal */}
+      {/* Floating Batch Action Bar */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 inset-x-0 mx-auto max-w-2xl px-4 z-40 animate-slide-up">
+          <div className="bg-pine-forest-deep text-white rounded-2xl shadow-2xl p-4 border border-pine-lime/30 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="w-8 h-8 rounded-full bg-pine-lime text-pine-forest font-bold text-xs flex items-center justify-center">
+                {selectedIds.size}
+              </span>
+              <div>
+                <p className="text-sm font-bold text-white">
+                  {selectedIds.size} candidate{selectedIds.size > 1 ? 's' : ''} selected
+                </p>
+                <p className="text-[11px] text-white/60">
+                  Perform bulk hiring decisions or send invitation emails
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleBatchMarkReviewed}
+                className="btn-secondary text-xs bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center gap-1.5"
+              >
+                <CheckSquare size={13} />
+                Mark Reviewed
+              </button>
+              <button
+                type="button"
+                onClick={handleBatchInvite}
+                className="btn-primary text-xs bg-pine-lime text-pine-forest hover:bg-lime-400 font-bold flex items-center gap-1.5 shadow-sm"
+              >
+                <Send size={13} />
+                Shortlist & Send Mail
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedIds(new Set())}
+                className="text-xs text-white/50 hover:text-white ml-1"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete confirmation modal */}
       {deleteId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
           <div className="card p-6 max-w-sm w-full">
-            <h3 className="text-lg font-bold text-pine-navy">Delete Submission</h3>
+            <h3 className="text-lg font-bold text-pine-forest">Delete Submission</h3>
             <p className="text-sm text-pine-slate-light mt-2">
-              This will permanently delete the submission and all associated files. This cannot be undone.
+              This will permanently delete the submission and all associated evaluation reports. This action cannot be undone.
             </p>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setDeleteId(null)} className="btn-secondary flex-1">Cancel</button>
@@ -330,6 +620,36 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Checklist Modal */}
+      {checklistCandidate && (
+        <ReviewChecklistModal
+          candidate={checklistCandidate}
+          onClose={() => setChecklistCandidate(null)}
+          onSuccess={(updatedSub) => {
+            showSuccess(`Review checklist saved for ${checklistCandidate.full_name}`)
+            fetchData()
+          }}
+          onOpenInvitation={(cand) => {
+            setChecklistCandidate(null)
+            setInvitationCandidates([cand])
+          }}
+        />
+      )}
+
+      {/* Interview Invitation Modal */}
+      {invitationCandidates && invitationCandidates.length > 0 && (
+        <InvitationModal
+          candidates={invitationCandidates}
+          onClose={() => setInvitationCandidates(null)}
+          onSuccess={() => {
+            showSuccess(`Shortlist email invitations sent!`)
+            setSelectedIds(new Set())
+            fetchData()
+          }}
+        />
+      )}
     </div>
   )
 }
+

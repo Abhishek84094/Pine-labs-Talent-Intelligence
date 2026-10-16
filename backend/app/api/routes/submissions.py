@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile, status, Query
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.schemas.candidate import (
@@ -18,11 +19,16 @@ from app.api.schemas.candidate import (
     SubmissionListItem,
     SubmissionResponse,
     StatsResponse,
+    ReviewUpdateRequest,
+    BatchReviewRequest,
+    InterviewInvitationRequest,
+    InterviewInvitationResponse,
 )
 from app.core.config import get_settings
 from app.db.database import get_db
 from app.db.repository import SubmissionRepository
 from app.services.evaluation_service import run_evaluation_pipeline
+from app.services.email_service import send_interview_invitation
 from app.utils.file_validation import (
     validate_resume_file,
     validate_zip_file,
@@ -205,6 +211,7 @@ async def list_submissions(
     search: Optional[str] = Query(None),
     role: Optional[str] = Query(None),
     status_filter: Optional[str] = Query(None, alias="status"),
+    review_status: Optional[str] = Query(None, alias="review_status"),
     db: AsyncSession = Depends(get_db),
 ):
     """List submissions with optional search and filtering"""
@@ -215,6 +222,7 @@ async def list_submissions(
         search=search,
         role_filter=role,
         status_filter=status_filter,
+        review_filter=review_status,
     )
     return SubmissionListResponse(
         submissions=[SubmissionListItem.model_validate(s) for s in submissions],
@@ -391,3 +399,308 @@ async def retry_evaluation(
     background_tasks.add_task(run_evaluation_background, submission_id)
 
     return {"message": "Evaluation retry scheduled", "submission_id": submission_id}
+
+
+@router.patch(
+    "/submissions/{submission_id}/review",
+    response_model=SubmissionResponse,
+    tags=["Hiring Review"],
+    summary="Update candidate review status and checklist",
+)
+async def update_candidate_review(
+    submission_id: str,
+    payload: ReviewUpdateRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Mark a candidate submission as reviewed, shortlisted, or rejected, with optional checklist"""
+    repo = SubmissionRepository(db)
+    sub = await repo.update_review(
+        submission_id=submission_id,
+        review_status=payload.review_status,
+        review_checklist=payload.review_checklist,
+        reviewed_by=payload.reviewed_by,
+    )
+    if not sub:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    await db.commit()
+    return sub
+
+
+@router.post(
+    "/submissions/batch-review",
+    tags=["Hiring Review"],
+    summary="Batch update review status for candidates",
+)
+async def batch_update_review(
+    payload: BatchReviewRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Update review status for multiple candidates in one action"""
+    repo = SubmissionRepository(db)
+    updated_count = 0
+    for sub_id in payload.submission_ids:
+        sub = await repo.update_review(
+            submission_id=sub_id,
+            review_status=payload.review_status,
+            reviewed_by=payload.reviewed_by,
+        )
+        if sub:
+            updated_count += 1
+    await db.commit()
+    return {
+        "success": True,
+        "updated_count": updated_count,
+        "review_status": payload.review_status,
+        "message": f"Successfully updated {updated_count} candidates to '{payload.review_status}'",
+    }
+
+
+@router.post(
+    "/submissions/send-invitation",
+    response_model=InterviewInvitationResponse,
+    tags=["Hiring Review"],
+    summary="Send interview and online assessment shortlist invitations",
+)
+async def send_shortlist_invitations(
+    payload: InterviewInvitationRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Send shortlist invitation emails to selected candidates with:
+    - Online Assessment date
+    - Round 1 (Technical Interview) date
+    - Round 2 (HR & Leadership) date
+    Automatically updates candidates to 'shortlisted' and records email dispatch.
+    """
+    repo = SubmissionRepository(db)
+    results = []
+    success_count = 0
+    preview_html = None
+    delivery_mode = "simulated"
+
+    interview_details = {
+        "assessment_date": payload.assessment_date,
+        "technical_date": payload.technical_date,
+        "hr_date": payload.hr_date,
+        "custom_message": payload.custom_message,
+        "invited_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    for sub_id in payload.submission_ids:
+        sub = await repo.get_by_id(sub_id)
+        if not sub:
+            results.append({
+                "submission_id": sub_id,
+                "success": False,
+                "error": "Submission not found",
+            })
+            continue
+
+        # Send email via email service
+        res = await send_interview_invitation(
+            recipient_email=sub.email,
+            candidate_name=sub.full_name,
+            job_role=sub.job_role,
+            assessment_date=payload.assessment_date,
+            technical_date=payload.technical_date,
+            hr_date=payload.hr_date,
+            reference_id=sub.reference_id,
+            custom_message=payload.custom_message,
+            subject=payload.subject,
+        )
+
+        delivery_mode = res.get("delivery_mode", "simulated")
+        if "preview_html" in res and not preview_html:
+            preview_html = res["preview_html"]
+
+        if res.get("success"):
+            success_count += 1
+            await repo.record_invitation_sent(sub_id, interview_details)
+
+        results.append({
+            "submission_id": sub_id,
+            "candidate_name": sub.full_name,
+            "email": sub.email,
+            "role": sub.job_role,
+            "success": res.get("success", False),
+            "delivery_mode": res.get("delivery_mode"),
+            "message": res.get("message"),
+        })
+
+    await db.commit()
+
+    return InterviewInvitationResponse(
+        total_processed=len(payload.submission_ids),
+        successful_count=success_count,
+        delivery_mode=delivery_mode,
+        results=results,
+        preview_html=preview_html,
+        message=f"Successfully sent shortlist invitations to {success_count} candidate(s)",
+    )
+
+
+# ─── Email / SMTP Configuration & Test Endpoints ────────────────────────────
+
+class EmailConfigPayload(BaseModel):
+    smtp_host: str = "smtp.gmail.com"
+    smtp_port: int = 587
+    smtp_user: str
+    smtp_password: str
+    smtp_from_email: Optional[str] = None
+    smtp_from_name: Optional[str] = "Pine Labs Talent Intelligence"
+
+
+class EmailTestPayload(BaseModel):
+    recipient_email: str
+
+
+@router.get(
+    "/email/status",
+    tags=["Email Configuration"],
+    summary="Check current SMTP configuration status",
+)
+async def get_email_status():
+    """Check if live SMTP credentials are configured"""
+    is_live = bool(settings.smtp_host and settings.smtp_user and settings.smtp_password)
+    return {
+        "is_configured": is_live,
+        "mode": "live_smtp" if is_live else "simulated_demo",
+        "host": settings.smtp_host or None,
+        "port": settings.smtp_port,
+        "user": settings.smtp_user or None,
+        "from_email": settings.smtp_from_email,
+        "from_name": settings.smtp_from_name,
+        "message": (
+            f"Live SMTP active via {settings.smtp_host} ({settings.smtp_user})"
+            if is_live
+            else "Simulated demo mode. Real emails will NOT be sent until SMTP credentials are configured."
+        ),
+    }
+
+
+@router.post(
+    "/email/config",
+    tags=["Email Configuration"],
+    summary="Update and save SMTP configuration",
+)
+async def update_email_config(payload: EmailConfigPayload):
+    """Save SMTP configuration into backend/.env and update running settings"""
+    settings.smtp_host = payload.smtp_host
+    settings.smtp_port = payload.smtp_port
+    settings.smtp_user = payload.smtp_user
+    settings.smtp_password = payload.smtp_password
+    settings.smtp_from_email = payload.smtp_from_email or payload.smtp_user
+    if payload.smtp_from_name:
+        settings.smtp_from_name = payload.smtp_from_name
+
+    # Persist to backend/.env file
+    env_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    env_path = os.path.join(env_dir, ".env")
+    try:
+        lines = []
+        if os.path.exists(env_path):
+            with open(env_path, "r", encoding="utf-8") as f:
+                lines = f.readlines()
+
+        keys_to_update = {
+            "SMTP_HOST": payload.smtp_host,
+            "SMTP_PORT": str(payload.smtp_port),
+            "SMTP_USER": payload.smtp_user,
+            "SMTP_PASSWORD": payload.smtp_password,
+            "SMTP_FROM_EMAIL": settings.smtp_from_email,
+            "SMTP_FROM_NAME": settings.smtp_from_name,
+        }
+
+        new_lines = []
+        found_keys = set()
+        for line in lines:
+            if "=" in line and not line.strip().startswith("#"):
+                key = line.split("=")[0].strip()
+                if key in keys_to_update:
+                    new_lines.append(f"{key}={keys_to_update[key]}\n")
+                    found_keys.add(key)
+                    continue
+            new_lines.append(line)
+
+        for k, v in keys_to_update.items():
+            if k not in found_keys:
+                new_lines.append(f"{k}={v}\n")
+
+        with open(env_path, "w", encoding="utf-8") as f:
+            f.writelines(new_lines)
+
+    except Exception as e:
+        logger.warning(f"Could not write to .env file: {e}")
+
+    return {
+        "success": True,
+        "is_configured": True,
+        "message": f"SMTP credentials successfully updated for {payload.smtp_user}",
+    }
+
+
+@router.post(
+    "/email/test",
+    tags=["Email Configuration"],
+    summary="Send a live test verification email",
+)
+async def send_test_email(payload: EmailTestPayload):
+    """Test SMTP connection by sending a real verification email"""
+    if not (settings.smtp_host and settings.smtp_user and settings.smtp_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="SMTP is not configured yet. Please configure SMTP host, user, and password first.",
+        )
+
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+
+    try:
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = "Pine Labs Talent Intelligence — SMTP Verification Test"
+        msg["From"] = f"{settings.smtp_from_name} <{settings.smtp_from_email}>"
+        msg["To"] = payload.recipient_email
+
+        html_body = f"""
+        <div style="font-family: sans-serif; padding: 24px; background-color: #F3F5F1;">
+          <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 8px; padding: 24px; border: 1px solid #D8E2D2;">
+            <div style="background-color: #00262C; color: #D0F255; font-size: 11px; font-weight: bold; padding: 4px 10px; display: inline-block; border-radius: 4px; text-transform: uppercase;">
+              PINE LABS
+            </div>
+            <h2 style="color: #00262C; margin-top: 14px;">SMTP Verification Successful!</h2>
+            <p style="color: #4A5D5E; font-size: 14px; line-height: 1.5;">
+              This test confirms that your Pine Labs Talent Intelligence platform is properly connected to your email provider (<strong>{settings.smtp_host}</strong>).
+            </p>
+            <p style="color: #4A5D5E; font-size: 14px; line-height: 1.5;">
+              Shortlist invitations sent from the Hiring Dashboard will now be delivered live to candidates' inboxes.
+            </p>
+            <div style="margin-top: 20px; font-size: 12px; color: #8F9E9F; border-top: 1px solid #E2E8DE; padding-top: 12px;">
+              Sent at {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
+            </div>
+          </div>
+        </div>
+        """
+        msg.attach(MIMEText("Pine Labs SMTP Verification Successful. Your platform is ready to send live emails.", "plain"))
+        msg.attach(MIMEText(html_body, "html"))
+
+        server = smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=15)
+        if settings.smtp_use_tls:
+            server.starttls()
+        server.login(settings.smtp_user, settings.smtp_password)
+        server.sendmail(settings.smtp_from_email, payload.recipient_email, msg.as_string())
+        server.quit()
+
+        return {
+            "success": True,
+            "message": f"Verification email successfully sent to {payload.recipient_email}!",
+            "recipient": payload.recipient_email,
+        }
+    except Exception as e:
+        logger.error(f"Failed to send test email: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"SMTP Error: {str(e)}. If using Gmail, make sure you use a 16-character App Password (not your personal Google account password).",
+        )
+
+

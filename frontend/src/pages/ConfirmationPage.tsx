@@ -1,125 +1,96 @@
-import { useState } from 'react'
 import { useLocation, Link } from 'react-router-dom'
-import { CheckCircle, Copy, Check, FileCheck, Clock, ShieldCheck, Mail, ArrowRight } from 'lucide-react'
-import Header from '../components/Header'
+import { CheckCircle2, Clock, ShieldCheck, ArrowRight } from 'lucide-react'
+import Navbar from '../components/Navbar'
 
 export default function ConfirmationPage() {
   const location = useLocation()
-  const [copied, setCopied] = useState(false)
-
-  const referenceId = (location.state as { reference_id?: string })?.reference_id || 'PL-SUBMISSION'
   const fullName = (location.state as { full_name?: string })?.full_name || 'Candidate'
-
-  const copyRefId = () => {
-    navigator.clipboard.writeText(referenceId).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    })
-  }
 
   return (
     <div className="min-h-screen bg-pine-cream">
-      <Header />
+      <Navbar variant="form" />
 
       <div className="max-w-2xl mx-auto px-6 py-14">
-        {/* Success Banner */}
-        <div className="text-center mb-8 animate-fade-in">
-          <div className="w-16 h-16 bg-pine-green rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-glow-green">
-            <CheckCircle size={36} className="text-white" />
+
+        {/* Success banner */}
+        <div className="text-center mb-10 animate-fade-in">
+          <div className="w-20 h-20 bg-pine-lime rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-lime">
+            <CheckCircle2 size={42} className="text-pine-forest" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-pine-navy">
-            Application Submitted Successfully!
+          <h1 className="text-2xl sm:text-3xl font-bold text-pine-forest">
+            Application Submitted!
           </h1>
-          <p className="text-pine-slate text-sm max-w-md mx-auto mt-2">
-            Thank you, <span className="font-semibold text-pine-navy">{fullName}</span>. Your application, resume, and project submission have been securely received.
+          <p className="text-pine-slate text-sm max-w-md mx-auto mt-2 leading-relaxed">
+            Thank you, <span className="font-semibold text-pine-forest">{fullName}</span>.
+            Your resume and project have been securely received. The hiring team will be in touch.
           </p>
         </div>
 
-        {/* Reference ID Receipt Card */}
-        <div className="card p-6 mb-6 animate-slide-up">
-          <div className="text-center">
-            <p className="text-xs font-semibold text-pine-slate-light uppercase tracking-wider mb-2">
-              Application Reference ID
-            </p>
-            <div className="inline-flex items-center justify-center gap-3 bg-pine-cream px-5 py-3 rounded-xl border border-pine-border">
-              <span className="text-2xl sm:text-3xl font-bold text-pine-navy tracking-widest font-mono">
-                {referenceId}
-              </span>
-              <button
-                onClick={copyRefId}
-                className="p-2 rounded-lg hover:bg-white border border-transparent hover:border-pine-border transition-all"
-                title="Copy reference ID"
-              >
-                {copied ? <Check size={18} className="text-pine-green" /> : <Copy size={18} className="text-pine-slate-light hover:text-pine-navy" />}
-              </button>
-            </div>
-            <p className="text-xs text-pine-slate-light mt-3">
-              Please save this reference ID for any future correspondence regarding your application.
-            </p>
-          </div>
-        </div>
-
-        {/* What Happens Next Card */}
-        <div className="card p-6 mb-6 animate-slide-up animation-delay-100">
-          <h2 className="text-sm font-bold text-pine-navy uppercase tracking-wider mb-5 flex items-center gap-2">
-            <Clock size={16} className="text-pine-green" />
-            What Happens Next?
+        {/* What happens next */}
+        <div className="card p-6 mb-5 animate-slide-up animation-delay-100">
+          <h2 className="text-xs font-bold text-pine-slate uppercase tracking-widest mb-5 flex items-center gap-2">
+            <Clock size={14} className="text-pine-forest" />
+            What happens next
           </h2>
 
-          <div className="space-y-4">
-            <div className="flex items-start gap-3.5">
-              <div className="w-8 h-8 rounded-full bg-pine-green-light text-pine-green flex items-center justify-center flex-shrink-0 font-bold text-xs mt-0.5">
-                1
+          <div className="space-y-5">
+            {[
+              {
+                num: 1,
+                title: 'Submission logged & verified',
+                desc: 'Your resume and project archive have been securely indexed in our candidate system.',
+                done: true,
+              },
+              {
+                num: 2,
+                title: 'Technical review by the hiring team',
+                desc: 'The Pine Labs engineering team will review your project architecture, code quality, and experience.',
+                done: false,
+              },
+              {
+                num: 3,
+                title: 'Recruiter contact & next steps',
+                desc: 'If your profile matches what the team is looking for, our talent team will reach out to schedule an interview.',
+                done: false,
+              },
+            ].map(({ num, title, desc, done }) => (
+              <div key={num} className="flex items-start gap-4">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xs mt-0.5 ${
+                  done
+                    ? 'bg-pine-lime text-pine-forest'
+                    : 'bg-pine-cream text-pine-slate border border-pine-border'
+                }`}>
+                  {done ? <CheckCircle2 size={14} /> : num}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-pine-forest">{title}</p>
+                  <p className="text-xs text-pine-slate mt-0.5 leading-relaxed">{desc}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-semibold text-pine-navy">Submission Logged & Verified</p>
-                <p className="text-xs text-pine-slate mt-0.5">
-                  Your resume and project code artifacts have been securely indexed in our candidate database.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3.5">
-              <div className="w-8 h-8 rounded-full bg-pine-cream text-pine-navy flex items-center justify-center flex-shrink-0 font-bold text-xs border border-pine-border mt-0.5">
-                2
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-pine-navy">Technical Review by Hiring Team</p>
-                <p className="text-xs text-pine-slate mt-0.5">
-                  The Pine Labs engineering team will review your project architecture, code practices, and experience against the role requirements.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3.5">
-              <div className="w-8 h-8 rounded-full bg-pine-cream text-pine-navy flex items-center justify-center flex-shrink-0 font-bold text-xs border border-pine-border mt-0.5">
-                3
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-pine-navy">Recruiter Contact & Next Steps</p>
-                <p className="text-xs text-pine-slate mt-0.5">
-                  If your profile matches our team's technical expectations, our talent acquisition team will reach out via email or phone to schedule an interview.
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Security & Confidentiality Notice */}
-        <div className="p-4 bg-white border border-pine-border rounded-xl flex items-start gap-3 mb-6">
-          <ShieldCheck size={18} className="text-pine-green flex-shrink-0 mt-0.5" />
+        {/* Confidentiality */}
+        <div className="p-4 bg-white border border-pine-border rounded-2xl flex items-start gap-3 mb-8 animate-slide-up animation-delay-200">
+          <ShieldCheck size={18} className="text-pine-forest flex-shrink-0 mt-0.5" />
           <p className="text-xs text-pine-slate leading-relaxed">
-            <strong className="text-pine-navy font-semibold">Confidentiality Guarantee:</strong> Your submitted code archive is processed strictly for technical screening evaluation within Pine Labs and is never redistributed or retained beyond the hiring process.
+            <strong className="text-pine-forest font-semibold">Confidentiality Guarantee: </strong>
+            Your submitted code is processed strictly for technical screening within Pine Labs
+            and is never redistributed or retained beyond this hiring process.
           </p>
         </div>
 
         {/* Actions */}
-        <div className="text-center space-y-3 animate-slide-up animation-delay-200">
-          <Link to="/" className="btn-secondary w-full justify-center">
+        <div className="text-center space-y-3 animate-slide-up animation-delay-300">
+          <Link to="/" className="btn-primary-dark w-full justify-center text-sm">
+            Back to Job Listing <ArrowRight size={15} />
+          </Link>
+          <Link to="/submit" className="btn-secondary w-full justify-center text-sm">
             Submit Another Application
           </Link>
           <p className="text-xs text-pine-slate-light">
-            Questions? Contact Pine Labs Careers at <span className="font-medium text-pine-navy">careers@pinelabs.com</span>
+            Questions? Email <span className="font-medium text-pine-forest">careers@pinelabs.com</span>
           </p>
         </div>
       </div>

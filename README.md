@@ -1,181 +1,460 @@
-# Pine Labs — AI-Powered Candidate Project & Resume Evaluation Platform
+<div align="center">
 
-[![FastAPI](https://img.shields.io/badge/Backend-FastAPI%200.115+-009688.svg)](https://fastapi.tiangolo.com)
-[![React](https://img.shields.io/badge/Frontend-React%2018%20%2B%20Vite-61DAFB.svg)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/Language-TypeScript%205+-3178C6.svg)](https://www.typescriptlang.org)
-[![Python](https://img.shields.io/badge/Language-Python%203.10+-3776AB.svg)](https://www.python.org)
-[![Groq](https://img.shields.io/badge/LLM-Groq%20Llama%203.3%2070B-F55036.svg)](https://groq.com)
-[![Tests](https://img.shields.io/badge/Tests-52%20Passing-success.svg)](backend/tests)
-[![Security](https://img.shields.io/badge/Security-ZipSlip%20%26%20Bomb%20Guards-brightgreen.svg)](docs/security.md)
+<img src="./logo/pine-labs-logo.png" alt="Pine Labs Logo" width="140" />
 
-An enterprise-grade technical hiring platform developed for **Pine Labs**. The platform enables candidates to submit their resume along with a ZIP archive of a real-world software project they have built. The platform performs safe, isolated static code inspection, analyzes resume claims against actual codebase evidence, and generates comprehensive, rubric-graded technical evaluation reports with tailored interview questions for the engineering team.
+# Pine Labs Talent Intelligence
 
----
+**AI-Powered Resume & Project Evaluation Platform**
 
-## 🌟 Key Features
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Groq](https://img.shields.io/badge/Groq-LLM-F55036?style=flat-square)](https://groq.com/)
+[![SQLite](https://img.shields.io/badge/SQLite-aiosqlite-003B57?style=flat-square&logo=sqlite)](https://www.sqlite.org/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
-- **Candidate Submission Portal**:
-  - Intuitive 4-step responsive workflow: Profile Info → Resume Upload → Project ZIP Upload → Review & Submit.
-  - Multi-file drag-and-drop with client-side format & size validation.
-  - Real-time upload progress tracking.
+> A full-stack intelligent recruitment platform built for Pine Labs that automates resume screening, project code evaluation, and candidate shortlisting — powered by Groq LLM inference.
 
-- **Zero-Execution Static Code Inspector**:
-  - Inspects project archives without running arbitrary code.
-  - **Zip Slip Guard**: Blocks all path traversal attacks (`../`, absolute paths, drive letters).
-  - **Zip Bomb Guard**: Enforces strict compression ratio, file count (<5,000), and uncompressed size limits (<200MB).
-  - **Credential Redaction**: Detects and excludes sensitive files (`.env`, `.pem`, `*.key`, `id_rsa`) from AI analysis.
-  - **Intelligent File Prioritization**: Parses READMEs, manifests (`package.json`, `go.mod`, `pom.xml`, `requirements.txt`), and core source files while ignoring heavy build artifacts (`node_modules`, `.git`, `dist`).
-
-- **3-Stage LLM Evaluation Pipeline (Groq + LangChain)**:
-  - **Stage 1 (Resume Analysis)**: Extracts structured career history, tech stacks, certifications, and highlighted claims.
-  - **Stage 2 (Project Analysis)**: Maps system architecture, frameworks, database designs, testing rigor, and code quality.
-  - **Stage 3 (Synthesis & Triangulation)**: Cross-references resume claims with project code, scores against a 5-dimension rubric, flags potential concerns, and generates non-generic interview questions grounded in the candidate's exact code.
-
-- **Recruiter & Hiring Team Dashboard**:
-  - Real-time submission tracking with status badges (Queued, Analyzing, Completed, Partial, Failed).
-  - Instant candidate search by name, email, or reference ID.
-  - Filter by evaluation status.
-  - One-click deletion and evaluation retry.
-
-- **Deep Technical Reports & Export**:
-  - Interactive evaluation reports with collapsible sections, score bars, and confidence ratings.
-  - Code snippet citations linked to line numbers.
-  - One-click export to **Markdown** or **JSON** for ATS integration.
-  - Full print stylesheet for hiring panel packets.
+</div>
 
 ---
 
-## 🏛 Architecture & Tech Stack
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
+- [API Reference](#api-reference)
+- [Hiring Workflow](#hiring-workflow)
+- [Screenshots](#screenshots)
+
+---
+
+## Overview
+
+Pine Labs Talent Intelligence is a **production-grade AI recruitment pipeline** that eliminates manual resume screening. Candidates submit their resume and a project ZIP via a polished web interface. The platform's backend runs a multi-stage LLM evaluation pipeline using Groq to:
+
+1. **Parse & analyse the resume** — extracts skills, experience, education, and red flags
+2. **Inspect the project code** — reads file structure, identifies architecture patterns, evaluates code quality
+3. **Generate a unified evaluation report** — produces a structured JSON report with scores, strengths, weaknesses, and custom interview questions
+
+The **Hiring Dashboard** gives the recruiting team a real-time view of all applicants, lets them review and shortlist candidates, and sends beautifully branded **Pine Labs interview invitation emails** via Gmail SMTP — all from a single interface.
+
+---
+
+## Features
+
+### Candidate-Facing
+- 🖊️ **Multi-step submission form** — name, email, phone, job role, GitHub/LinkedIn/portfolio links
+- 📄 **Resume upload** — PDF or DOCX (up to 10 MB)
+- 🗜️ **Project ZIP upload** — full project code (up to 50 MB), with safety validation
+- ⏳ **Real-time evaluation progress** — polling with animated status updates
+- ✅ **Confirmation screen** — submission receipt and expected timeline
+
+### AI Evaluation Pipeline
+- 📑 **Resume analysis** — skills extraction, experience scoring, consistency checks, red flag detection
+- 💻 **Project code analysis** — architecture overview, tech stack identification, code quality metrics, complexity assessment
+- 🧠 **Synthesis report** — unified LLM-generated report with overall score (0–100), strengths/weaknesses, and 5 tailored interview questions
+- 🔄 **Automatic retry** — tenacity-based LLM retry with exponential backoff; JSON-repair fallback for malformed responses
+
+### Hiring Dashboard
+- 📊 **Live applicant table** — search, filter by role/status/review state
+- ✔️ **Review checklist** — 5-point checklist modal to mark candidate evaluation complete
+- ☑️ **Multi-select shortlisting** — checkbox-select multiple candidates for batch actions
+- 📧 **One-click interview invitation** — configure 3-round schedule (Online Assessment, Technical, HR) and send a branded email
+- 📥 **PDF download** — download full evaluation report as PDF from the report page
+- 🏷️ **Status badges** — Needs Review / Reviewed / Shortlisted / Rejected
+
+### Email System
+- 🔖 **Branded Pine Labs HTML email** — dark forest header, lime-green accents, 3-round schedule card
+- 📬 **Gmail SMTP delivery** — real emails to candidates' inboxes
+- 📋 **Plain-text fallback** — always includes a text/plain part for email clients that block HTML
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        CANDIDATE BROWSER                           │
+│  Landing Page → Submission Form → Confirmation → (Report View)     │
+└────────────────────────┬────────────────────────────────────────────┘
+                         │ HTTP / REST (Vite Proxy → :8000)
+┌────────────────────────▼────────────────────────────────────────────┐
+│                     FASTAPI BACKEND  (:8000)                        │
+│                                                                     │
+│  ┌─────────────┐   ┌──────────────────┐   ┌─────────────────────┐  │
+│  │  Submission │   │  Evaluation      │   │  Hiring / Review    │  │
+│  │  Routes     │   │  Pipeline        │   │  Routes             │  │
+│  │  POST /sub  │   │  (Background)    │   │  PATCH /review      │  │
+│  │  GET  /sub  │──▶│                  │   │  POST /batch-review │  │
+│  │  DELETE     │   │  ┌────────────┐  │   │  POST /send-invite  │  │
+│  └─────────────┘   │  │ Resume     │  │   └─────────────────────┘  │
+│                    │  │ Parser     │  │                             │
+│  ┌─────────────┐   │  │ (PyMuPDF/  │  │   ┌─────────────────────┐  │
+│  │  Email      │   │  │  docx)     │  │   │  Email Service      │  │
+│  │  Routes     │   │  └─────┬──────┘  │   │  (Gmail SMTP)       │  │
+│  │  GET status │   │        │         │   └─────────────────────┘  │
+│  └─────────────┘   │  ┌─────▼──────┐  │                             │
+│                    │  │ Project    │  │   ┌─────────────────────┐  │
+│  ┌─────────────┐   │  │ Analyser   │  │   │  SQLite DB          │  │
+│  │  Repository │   │  │ (ZIP walk) │  │   │  (aiosqlite /       │  │
+│  │  Layer      │◀──│  └─────┬──────┘  │   │   SQLAlchemy)       │  │
+│  └─────────────┘   │        │         │   └─────────────────────┘  │
+│                    │  ┌─────▼──────┐  │                             │
+│                    │  │ Groq LLM   │  │                             │
+│                    │  │ (LangChain)│  │                             │
+│                    │  └────────────┘  │                             │
+│                    └──────────────────┘                             │
+└─────────────────────────────────────────────────────────────────────┘
+                         │
+┌────────────────────────▼────────────────────────────────────────────┐
+│                     HIRING TEAM BROWSER                             │
+│  Dashboard → Review Checklist → Shortlist → Send Invitation Email  │
+│  Report Page → View AI Report → Download PDF                       │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Evaluation Pipeline — Sequence
+
+```
+Candidate submits form
+        │
+        ▼
+[1] File validation (size, MIME, ZIP safety)
+        │
+        ▼
+[2] Files saved to /storage/{uuid}/
+        │
+        ▼
+[3] SQLite record created (status: queued)
+        │
+        ▼
+[4] Background task triggered
+        │
+        ├──▶ [4a] Resume Parser
+        │         PyMuPDF extracts text from PDF / python-docx for DOCX
+        │         LangChain prompt → Groq LLM → structured JSON
+        │
+        ├──▶ [4b] Project Analyser
+        │         ZIP walked → file tree built → key files read
+        │         LangChain prompt → Groq LLM → structured JSON
+        │
+        └──▶ [4c] Report Synthesiser
+                  Combined context → Groq LLM → final report JSON
+                  Score (0–100), strengths, weaknesses, interview Qs
+                  Stored in DB as evaluation_report column
+        │
+        ▼
+[5] Status → "completed" | "partial" | "failed"
+        │
+        ▼
+[6] Frontend polls /status → renders Report Page
+```
+
+---
+
+## Tech Stack
+
+### Backend
+
+| Layer | Technology | Purpose |
+|---|---|---|
+| API Framework | **FastAPI 0.115** | REST API, background tasks, dependency injection |
+| ASGI Server | **Uvicorn** | Production-grade async server |
+| LLM Inference | **Groq API** (via LangChain) | Ultra-fast LLM inference for resume/project analysis |
+| LLM Orchestration | **LangChain 0.3 + langchain-groq** | Prompt templates, chain composition |
+| PDF Parsing | **PyMuPDF (fitz)** | Extract text from PDF resumes |
+| DOCX Parsing | **python-docx** | Extract text from Word resumes |
+| Database ORM | **SQLAlchemy 2.0 (async)** | Async DB operations |
+| Database | **SQLite + aiosqlite** | Lightweight async persistence |
+| Data Validation | **Pydantic v2** | Request/response schemas |
+| Config | **pydantic-settings** | `.env` file loading |
+| Retry Logic | **Tenacity** | Exponential backoff for LLM calls |
+| JSON Repair | **json-repair** | Fixes malformed LLM JSON output |
+| Email | **smtplib (Gmail SMTP)** | Branded candidate invitation emails |
+| File Safety | **python-magic-bin** | MIME type validation |
+
+### Frontend
+
+| Layer | Technology | Purpose |
+|---|---|---|
+| Framework | **React 18 + TypeScript** | Component-based UI |
+| Build Tool | **Vite 5** | Lightning-fast dev server and bundler |
+| Routing | **React Router v6** | Client-side navigation |
+| Styling | **Tailwind CSS 3** | Utility-first styling with custom Pine Labs design tokens |
+| Icons | **Lucide React** | Crisp, consistent icon set |
+| HTTP Client | **Axios** | REST API calls with base URL proxy |
+| PDF Export | **jsPDF + html2canvas** | Client-side PDF generation of reports |
+| Fonts | **Inter (Google Fonts)** | Premium typography |
+
+### Design System — Pine Labs Tokens
+
+| Token | Value | Usage |
+|---|---|---|
+| `pine-forest` | `#00262C` | Primary dark — headers, nav |
+| `pine-forest-deep` | `#001A1E` | Deep backgrounds |
+| `pine-lime` | `#D0F255` | Brand accent — CTAs, badges |
+| `pine-mint` | `#13BBCA` | Teal accent — highlights |
+| `pine-cream` | `#F3F5F1` | Background base |
+| `pine-slate` | `#1E2D2F` | Body text |
+
+---
+
+## Project Structure
 
 ```
 pine-labs-talent-intelligence/
-├── backend/                  # FastAPI Application
+│
+├── backend/                        # FastAPI Python backend
 │   ├── app/
-│   │   ├── api/              # Route handlers & Pydantic schemas
-│   │   ├── core/             # Configuration & environment settings
-│   │   ├── db/               # SQLAlchemy async models, database & seed script
-│   │   ├── llm/              # Groq client, LangChain chains & prompts
-│   │   ├── services/         # Resume parser, zip inspector & evaluation orchestrator
-│   │   └── main.py           # FastAPI entrypoint & middleware
-│   └── tests/                # 52 unit & integration tests
-├── frontend/                 # React 18 + TypeScript + Vite SPA
+│   │   ├── api/
+│   │   │   ├── routes/
+│   │   │   │   └── submissions.py  # All REST endpoints
+│   │   │   └── schemas/
+│   │   │       ├── candidate.py    # Pydantic request/response models
+│   │   │       └── evaluation.py   # Evaluation report schemas
+│   │   ├── core/
+│   │   │   └── config.py           # Settings from .env
+│   │   ├── db/
+│   │   │   ├── database.py         # SQLAlchemy engine + session
+│   │   │   ├── models.py           # ORM models (submissions table)
+│   │   │   └── repository.py       # DB query layer
+│   │   ├── llm/
+│   │   │   └── groq_client.py      # LangChain + Groq setup
+│   │   ├── services/
+│   │   │   ├── evaluation_service.py  # Pipeline orchestrator
+│   │   │   ├── resume_parser.py       # PDF/DOCX → structured JSON
+│   │   │   ├── project_analyser.py    # ZIP → code analysis JSON
+│   │   │   └── email_service.py       # Gmail SMTP invitation sender
+│   │   ├── utils/
+│   │   │   └── file_validation.py  # MIME, size, ZIP safety checks
+│   │   └── main.py                 # FastAPI app entrypoint + CORS
+│   ├── .env                        # Secrets (git-ignored)
+│   ├── .env.example                # Template for setup
+│   └── requirements.txt
+│
+├── frontend/                       # React + TypeScript frontend
 │   ├── src/
-│   │   ├── components/       # Header, FileUpload, StepIndicator
-│   │   ├── pages/            # SubmissionPage, DashboardPage, ReportPage, ConfirmationPage
-│   │   ├── services/         # Axios API client
-│   │   └── types/            # TypeScript schemas matching backend models
-│   └── index.html
-└── docs/                     # Comprehensive architecture and security documentation
-    ├── architecture.md       # High-level architecture & trade-offs
-    ├── security.md           # Threat model, Zip Slip, and credential protection
-    └── prompts_and_chains.md # Prompt design & evaluation rubrics
+│   │   ├── components/
+│   │   │   ├── Navbar.tsx              # Top navigation bar
+│   │   │   ├── FileUpload.tsx          # Drag-and-drop file uploader
+│   │   │   ├── StepIndicator.tsx       # Multi-step form progress
+│   │   │   ├── ReviewChecklistModal.tsx # Recruiter review checklist
+│   │   │   └── InvitationModal.tsx     # Shortlist & send email modal
+│   │   ├── pages/
+│   │   │   ├── LandingPage.tsx         # Hero, role info, how-it-works
+│   │   │   ├── SubmissionPage.tsx      # Candidate application form
+│   │   │   ├── ConfirmationPage.tsx    # Post-submission receipt
+│   │   │   ├── DashboardPage.tsx       # Hiring team dashboard
+│   │   │   └── ReportPage.tsx          # Full AI evaluation report
+│   │   ├── services/
+│   │   │   └── api.ts                  # Axios API client
+│   │   ├── types/
+│   │   │   └── index.ts                # TypeScript interfaces
+│   │   ├── data/
+│   │   │   └── roleConfig.ts           # Job role configuration
+│   │   ├── index.css                   # Tailwind + design tokens
+│   │   └── App.tsx                     # Router setup
+│   ├── .env.example
+│   └── package.json
+│
+├── docs/                           # Internal documentation
+├── logo/                           # Pine Labs brand assets
+├── storage/                        # Uploaded files (git-ignored)
+├── run_backend.bat                 # Windows: start backend
+├── run_frontend.bat                # Windows: start frontend
+└── run_all.bat                     # Windows: start both
 ```
-
-### Technology Matrix
-- **Backend**: Python 3.10+, FastAPI, SQLAlchemy, aiosqlite, Pydantic v2, PyMuPDF (`fitz`), python-docx.
-- **AI / LLM**: LangChain, ChatGroq (`llama-3.3-70b-versatile`), Tenacity.
-- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Lucide React icons, React Hook Form, Zod.
-- **Database**: SQLite with async `aiosqlite` engine (zero external infrastructure dependencies).
 
 ---
 
-## 🚀 Quickstart Guide
+## Getting Started
 
 ### Prerequisites
-- Python 3.10 or higher
-- Node.js 18 or higher & npm
 
-### 1. Backend Setup
+- **Python 3.11+**
+- **Node.js 18+**
+- **Groq API key** — free at [console.groq.com](https://console.groq.com)
+- **Gmail account** with an [App Password](https://myaccount.google.com/apppasswords) (for email sending)
+
+### 1. Clone the repository
+
 ```bash
-# Navigate to backend directory
-cd pine-labs-talent-intelligence/backend
-
-# Install Python dependencies
-pip install -r requirements.txt
-
-# (Optional) Add your Groq API key in backend/.env for live LLM inference
-# Obtain a free key at https://console.groq.com/
-# GROQ_API_KEY=gsk_...
-
-# Seed the database with 3 realistic candidate evaluations
-python -m app.db.seed
-
-# Start the backend server (runs on http://localhost:8000)
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+git clone https://github.com/YOUR_USERNAME/pine-labs-talent-intelligence.git
+cd pine-labs-talent-intelligence
 ```
 
-Interactive Swagger API Documentation will be available at:
-👉 **`http://localhost:8000/api/docs`**
+### 2. Backend setup
 
----
-
-### 2. Frontend Setup
 ```bash
-# In a new terminal, navigate to frontend directory
-cd pine-labs-talent-intelligence/frontend
+cd backend
 
-# Install dependencies (already installed in workspace)
+# Create virtual environment
+python -m venv venv
+venv\Scripts\activate        # Windows
+# source venv/bin/activate   # macOS/Linux
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Copy and configure environment
+cp .env.example .env
+# Edit .env with your credentials (see Environment Variables below)
+
+# Start the API server
+py -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+### 3. Frontend setup
+
+```bash
+cd frontend
+
+# Install dependencies
 npm install
 
-# Start the Vite development server (runs on http://localhost:5173)
+# Start development server
 npm run dev
 ```
 
-Open your browser at:
-👉 **`http://localhost:5173`** — Candidate Submission Portal
-👉 **`http://localhost:5173/dashboard`** — Recruiter Hiring Dashboard
+### 4. Open in browser
 
----
-
-## 🧪 Running Automated Tests
-
-The backend includes a comprehensive test suite of **52 unit and integration tests** covering:
-- File format and MIME type validation
-- Zip safety (Zip Slip rejection, Zip Bomb threshold limits, corrupt archive handling)
-- Sensitive file detection (`.env`, `.pem`, `.key`)
-- Directory exclusion rules (`node_modules`, `.git`, `__pycache__`)
-- Resume PDF and DOCX text extraction
-- Submission API lifecycle (Create, Read, List, Search, Filter, Delete, Retry)
-- LLM failure modes and graceful fallback handling
-
-To run tests:
-```bash
-cd pine-labs-talent-intelligence/backend
-pytest tests/ -v
-```
-
-**Result:**
-```
-======================= 52 passed, 5 warnings in 3.43s ========================
-```
-
----
-
-## 🔒 Security & Safe Analysis Guarantee
-
-1. **Zero Code Execution**: Code submitted in candidate ZIPs is **never** compiled, executed, or containerized. Static inspection reads file metadata and selective source text for pattern analysis.
-2. **Path Traversal Protection**: Every archive entry is inspected against path canonicalization attacks before reading bytes.
-3. **Secret Isolation**: Configuration files containing API keys, private certificates, or `.env` secrets are automatically redacted before LLM transmission.
-4. **Prompt Injection Hardening**: All candidate data is isolated using markdown delimiter fences and evaluated via strict Pydantic JSON schemas.
-
-For detailed security analysis, see [docs/security.md](docs/security.md).
-
----
-
-## 📊 Evaluation Rubric Dimensions
-
-Candidates are objectively evaluated on a 10-point scale across 5 standard dimensions:
-
-| Dimension | Key Evaluation Criteria |
+| URL | Description |
 |---|---|
-| **System Architecture & Design** | Modularity, separation of concerns, layer decoupling, scalability. |
-| **Code Quality & Idiomatic Implementation** | Error handling, typing, naming conventions, clean syntax. |
-| **Concurrency, Fault Tolerance & Performance** | Thread-safety, idempotency, race conditions, caching, backoff. |
-| **Security & Edge-Case Handling** | Input validation, secret hygiene, SQL injection prevention, authentication. |
-| **Testing & Observability** | Unit test depth, integration tests, mock stubs, logging and metrics. |
+| `http://localhost:5173/` | Candidate landing page & application form |
+| `http://localhost:5173/dashboard` | Hiring team dashboard |
+| `http://127.0.0.1:8000/docs` | FastAPI interactive API docs (Swagger UI) |
+
+### Windows one-click launch
+
+```bat
+# From project root — starts both backend and frontend
+run_all.bat
+```
 
 ---
 
-## 📄 License & Attribution
-Designed and built for the **Pine Labs Technical Hiring Assessment**.
-All Rights Reserved.
+## Environment Variables
+
+Copy `backend/.env.example` to `backend/.env` and fill in:
+
+```env
+# ─── LLM ──────────────────────────────────────────────────────────
+GROQ_API_KEY=gsk_your_groq_api_key_here
+GROQ_MODEL=openai/gpt-oss-20b          # or llama-3.3-70b-versatile
+
+# ─── Database ─────────────────────────────────────────────────────
+DATABASE_URL=sqlite+aiosqlite:///./pine_labs_talent.db
+
+# ─── Storage ──────────────────────────────────────────────────────
+UPLOAD_DIR=../../storage
+
+# ─── File Limits ──────────────────────────────────────────────────
+MAX_RESUME_SIZE_MB=10
+MAX_PROJECT_ZIP_SIZE_MB=50
+
+# ─── CORS ─────────────────────────────────────────────────────────
+FRONTEND_ORIGIN=http://localhost:5173
+
+# ─── Gmail SMTP (for shortlist invitation emails) ─────────────────
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASSWORD=your_16char_app_password   # Google App Password, NOT your login password
+SMTP_FROM_EMAIL=your_email@gmail.com
+SMTP_FROM_NAME=Pine Labs Talent Intelligence
+SMTP_USE_TLS=true
+```
+
+> **Getting a Gmail App Password:**
+> 1. Enable 2-Step Verification at [myaccount.google.com/security](https://myaccount.google.com/security)
+> 2. Go to [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
+> 3. Create a new App Password → copy the 16-character code into `SMTP_PASSWORD`
+
+---
+
+## API Reference
+
+### Submissions
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/submissions` | Submit candidate application (multipart: resume + zip) |
+| `GET` | `/api/submissions` | List all submissions (search, filter, pagination) |
+| `GET` | `/api/submissions/stats` | Dashboard statistics |
+| `GET` | `/api/submissions/{id}` | Get single submission |
+| `GET` | `/api/submissions/{id}/status` | Poll evaluation status |
+| `GET` | `/api/submissions/{id}/report` | Get full AI evaluation report |
+| `DELETE` | `/api/submissions/{id}` | Delete submission and files |
+| `POST` | `/api/submissions/{id}/retry` | Retry failed evaluation |
+
+### Hiring Review
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `PATCH` | `/api/submissions/{id}/review` | Update review status + checklist |
+| `POST` | `/api/submissions/batch-review` | Bulk update review status |
+| `POST` | `/api/submissions/send-invitation` | Send shortlist invitation emails |
+
+Full interactive documentation available at: `http://127.0.0.1:8000/docs`
+
+---
+
+## Hiring Workflow
+
+```
+1. Candidate submits application via Landing Page
+         │
+         ▼
+2. AI pipeline evaluates resume + project (1–3 mins)
+         │
+         ▼
+3. Hiring team opens Dashboard
+         │
+         ├── Search / filter candidates by name, role, status
+         ├── Click candidate row → view full AI Report
+         │         ├── Resume analysis: skills, experience, red flags
+         │         ├── Project analysis: architecture, code quality
+         │         ├── Synthesis score (0–100) with strengths/weaknesses
+         │         ├── 5 custom interview questions
+         │         └── Download PDF button
+         │
+         ├── Click "Review Checklist" → tick 5-point verification
+         │         ├── ☑ Executive summary reviewed
+         │         ├── ☑ Resume skills verified
+         │         ├── ☑ Project architecture assessed
+         │         ├── ☑ Red flags checked
+         │         └── ☑ Interview questions prepared
+         │
+         └── Select candidates → "Shortlist & Send Mail"
+                   ├── Configure: Online Assessment date
+                   ├── Configure: Round 1 Technical interview date
+                   ├── Configure: Round 2 HR interview date
+                   ├── Optional: personalized note
+                   └── Send → Branded Pine Labs email delivered instantly
+```
+
+---
+
+## Screenshots
+
+> Dashboard, Report page, and Invitation modal screenshots can be found in the [`docs/`](./docs/) folder.
+
+---
+
+## Contributing
+
+This project was built as a talent evaluation platform for Pine Labs internal hiring. For questions or contributions, please open an issue.
+
+---
+
+<div align="center">
+
+Built with ❤️ for Pine Labs · Powered by Groq LLM
+
+</div>

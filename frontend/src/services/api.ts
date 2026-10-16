@@ -87,6 +87,7 @@ export const submissionApi = {
     search?: string;
     role?: string;
     status?: string;
+    review_status?: string;
   }): Promise<SubmissionListResponse> {
     const response = await api.get<SubmissionListResponse>('/submissions', { params });
     return response.data;
@@ -94,6 +95,50 @@ export const submissionApi = {
 
   async getStats(): Promise<Stats> {
     const response = await api.get<Stats>('/submissions/stats');
+    return response.data;
+  },
+
+  async updateReview(
+    submissionId: string,
+    data: {
+      review_status: 'pending' | 'reviewed' | 'shortlisted' | 'rejected';
+      review_checklist?: Record<string, boolean | string>;
+      reviewed_by?: string;
+    }
+  ): Promise<SubmissionResponse> {
+    const response = await api.patch<SubmissionResponse>(`/submissions/${submissionId}/review`, data);
+    return response.data;
+  },
+
+  async batchUpdateReview(
+    submissionIds: string[],
+    reviewStatus: 'pending' | 'reviewed' | 'shortlisted' | 'rejected',
+    reviewedBy?: string
+  ): Promise<{ success: boolean; updated_count: number; message: string }> {
+    const response = await api.post('/submissions/batch-review', {
+      submission_ids: submissionIds,
+      review_status: reviewStatus,
+      reviewed_by: reviewedBy,
+    });
+    return response.data;
+  },
+
+  async sendInterviewInvitation(data: {
+    submission_ids: string[];
+    assessment_date: string;
+    technical_date: string;
+    hr_date: string;
+    custom_message?: string;
+    subject?: string;
+  }): Promise<{
+    total_processed: number;
+    successful_count: number;
+    delivery_mode: string;
+    preview_html?: string;
+    message: string;
+    results: any[];
+  }> {
+    const response = await api.post('/submissions/send-invitation', data);
     return response.data;
   },
 
@@ -109,6 +154,39 @@ export const submissionApi = {
 export const healthApi = {
   async check(): Promise<HealthResponse> {
     const response = await api.get<HealthResponse>('/health');
+    return response.data;
+  },
+};
+
+export const emailApi = {
+  async getStatus(): Promise<{
+    is_configured: boolean;
+    mode: 'live_smtp' | 'simulated_demo';
+    host: string | null;
+    port: number;
+    user: string | null;
+    from_email: string;
+    from_name: string;
+    message: string;
+  }> {
+    const response = await api.get('/email/status');
+    return response.data;
+  },
+
+  async updateConfig(data: {
+    smtp_host: string;
+    smtp_port: number;
+    smtp_user: string;
+    smtp_password: string;
+    smtp_from_email?: string;
+    smtp_from_name?: string;
+  }): Promise<{ success: boolean; is_configured: boolean; message: string }> {
+    const response = await api.post('/email/config', data);
+    return response.data;
+  },
+
+  async sendTestEmail(recipientEmail: string): Promise<{ success: boolean; message: string; recipient: string }> {
+    const response = await api.post('/email/test', { recipient_email: recipientEmail });
     return response.data;
   },
 };

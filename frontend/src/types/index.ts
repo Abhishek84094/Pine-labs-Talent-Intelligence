@@ -16,6 +16,13 @@ export interface SubmissionResponse {
   project_file_size: number;
   status: ProcessingStatus;
   error_message: string | null;
+  review_status?: 'pending' | 'reviewed' | 'shortlisted' | 'rejected';
+  review_checklist?: string | null;
+  reviewed_at?: string | null;
+  reviewed_by?: string | null;
+  email_sent?: boolean;
+  email_sent_at?: string | null;
+  interview_details?: string | null;
   submitted_at: string;
   updated_at: string;
 }
@@ -49,6 +56,13 @@ export interface SubmissionListItem {
   email: string;
   job_role: string;
   status: ProcessingStatus;
+  review_status?: 'pending' | 'reviewed' | 'shortlisted' | 'rejected';
+  review_checklist?: string | null;
+  reviewed_at?: string | null;
+  reviewed_by?: string | null;
+  email_sent?: boolean;
+  email_sent_at?: string | null;
+  interview_details?: string | null;
   submitted_at: string;
   resume_filename: string;
   project_filename: string;
@@ -66,6 +80,46 @@ export interface Stats {
   pending: number;
   completed: number;
   failed: number;
+  reviewed?: number;
+  shortlisted?: number;
+}
+
+export interface ReviewUpdateRequest {
+  review_status: 'pending' | 'reviewed' | 'shortlisted' | 'rejected';
+  review_checklist?: Record<string, boolean | string>;
+  reviewed_by?: string;
+}
+
+export interface BatchReviewRequest {
+  submission_ids: string[];
+  review_status: 'pending' | 'reviewed' | 'shortlisted' | 'rejected';
+  reviewed_by?: string;
+}
+
+export interface InterviewInvitationRequest {
+  submission_ids: string[];
+  assessment_date: string;
+  technical_date: string;
+  hr_date: string;
+  custom_message?: string;
+  subject?: string;
+}
+
+export interface InterviewInvitationResponse {
+  total_processed: number;
+  successful_count: number;
+  delivery_mode: string;
+  results: Array<{
+    submission_id: string;
+    candidate_name: string;
+    email: string;
+    role: string;
+    success: boolean;
+    delivery_mode?: string;
+    message?: string;
+  }>;
+  preview_html?: string;
+  message: string;
 }
 
 export interface HealthResponse {

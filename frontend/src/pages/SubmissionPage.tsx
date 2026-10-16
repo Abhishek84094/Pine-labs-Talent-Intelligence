@@ -6,9 +6,9 @@ import { z } from 'zod'
 import {
   User, Mail, Phone, Briefcase, GitBranch, Link2, Globe,
   FileText, Archive, ArrowRight, ArrowLeft, AlertCircle,
-  Info, ChevronRight,
+  Info, ChevronRight, CheckCircle2,
 } from 'lucide-react'
-import Header from '../components/Header'
+import Navbar from '../components/Navbar'
 import StepIndicator from '../components/StepIndicator'
 import FileUpload from '../components/FileUpload'
 import { submissionApi } from '../services/api'
@@ -47,6 +47,42 @@ const JOB_ROLES = [
   'Data Scientist',
   'Other',
 ]
+
+/* Small field wrapper for consistent layout */
+function Field({ label, required, error, children }: {
+  label: string
+  required?: boolean
+  error?: string
+  children: React.ReactNode
+}) {
+  return (
+    <div>
+      <label className="label">
+        {label}
+        {required && <span className="text-status-error ml-0.5">*</span>}
+      </label>
+      {children}
+      {error && (
+        <p className="error-text">
+          <AlertCircle size={12} />
+          {error}
+        </p>
+      )}
+    </div>
+  )
+}
+
+/* Pill for step headers */
+function StepBadge({ num, label }: { num: number; label: string }) {
+  return (
+    <div className="flex items-center gap-3 mb-6">
+      <span className="w-8 h-8 rounded-full bg-pine-lime text-pine-forest text-sm font-bold flex items-center justify-center flex-shrink-0">
+        {num}
+      </span>
+      <h2 className="text-xl font-bold text-pine-forest">{label}</h2>
+    </div>
+  )
+}
 
 export default function SubmissionPage() {
   const navigate = useNavigate()
@@ -124,7 +160,7 @@ export default function SubmissionPage() {
       )
 
       navigate(`/confirmation/${response.id}`, {
-        state: { reference_id: response.reference_id, full_name: data.full_name }
+        state: { full_name: data.full_name }
       })
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Submission failed. Please try again.')
@@ -136,52 +172,46 @@ export default function SubmissionPage() {
 
   return (
     <div className="min-h-screen bg-pine-cream">
-      <Header />
+      <Navbar variant="form" />
 
-      {/* Hero */}
-      <div className="bg-pine-navy text-white">
+      {/* Hero band */}
+      <div className="bg-pine-forest-deep text-white">
         <div className="max-w-3xl mx-auto px-6 py-10">
-          <div className="flex items-center gap-2 text-pine-green text-xs font-semibold mb-3 uppercase tracking-wider">
-            <div className="w-4 h-0.5 bg-pine-green" />
-            Technical Hiring
+          <div className="flex items-center gap-2 text-pine-lime text-xs font-semibold mb-3 uppercase tracking-widest">
+            <div className="w-4 h-px bg-pine-lime" />
+            Application Form
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
             Submit Your Application
           </h1>
-          <p className="text-pine-slate-light text-sm max-w-lg">
-            Share your resume and a project you're proud of. Our platform will prepare a
-            technical overview to help the Pine Labs team understand your work before the interview.
+          <p className="text-white/50 text-sm max-w-lg leading-relaxed">
+            Share your resume and a project you are proud of. The hiring team will
+            review your submission — no automated gatekeeping.
           </p>
         </div>
       </div>
 
       {/* Step indicator */}
-      <div className="bg-white border-b border-pine-border">
+      <div className="bg-white border-b border-pine-border sticky top-14 z-30">
         <div className="max-w-3xl mx-auto px-6 py-5 flex justify-center">
           <StepIndicator steps={STEPS} currentStep={step} />
         </div>
       </div>
 
-      {/* Form */}
+      {/* Form content */}
       <div className="max-w-3xl mx-auto px-6 py-8">
         <form onSubmit={handleSubmit(onSubmit)}>
 
-          {/* Step 1: Candidate Info */}
+          {/* ── Step 1: Candidate Info ── */}
           {step === 1 && (
             <div className="card p-6 sm:p-8 animate-slide-up">
-              <div className="mb-6">
-                <h2 className="text-xl font-bold text-pine-navy">Your Information</h2>
-                <p className="text-sm text-pine-slate-light mt-1">
-                  Tell us a bit about yourself. This information will be used to identify your application.
-                </p>
-              </div>
+              <StepBadge num={1} label="Your Information" />
+              <p className="text-sm text-pine-slate mb-6">
+                Tell us about yourself. This helps us identify your application and reach you.
+              </p>
 
               <div className="space-y-5">
-                {/* Full Name */}
-                <div>
-                  <label htmlFor="full_name" className="label">
-                    Full Name <span className="text-status-error">*</span>
-                  </label>
+                <Field label="Full Name" required error={errors.full_name?.message}>
                   <div className="relative">
                     <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-pine-slate-light" />
                     <input
@@ -192,17 +222,10 @@ export default function SubmissionPage() {
                       {...register('full_name')}
                     />
                   </div>
-                  {errors.full_name && (
-                    <p className="error-text"><AlertCircle size={12} />{errors.full_name.message}</p>
-                  )}
-                </div>
+                </Field>
 
-                {/* Email & Phone */}
                 <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="email" className="label">
-                      Email Address <span className="text-status-error">*</span>
-                    </label>
+                  <Field label="Email Address" required error={errors.email?.message}>
                     <div className="relative">
                       <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-pine-slate-light" />
                       <input
@@ -213,15 +236,9 @@ export default function SubmissionPage() {
                         {...register('email')}
                       />
                     </div>
-                    {errors.email && (
-                      <p className="error-text"><AlertCircle size={12} />{errors.email.message}</p>
-                    )}
-                  </div>
+                  </Field>
 
-                  <div>
-                    <label htmlFor="phone" className="label">
-                      Phone Number <span className="text-status-error">*</span>
-                    </label>
+                  <Field label="Phone Number" required error={errors.phone?.message}>
                     <div className="relative">
                       <Phone size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-pine-slate-light" />
                       <input
@@ -232,24 +249,17 @@ export default function SubmissionPage() {
                         {...register('phone')}
                       />
                     </div>
-                    {errors.phone && (
-                      <p className="error-text"><AlertCircle size={12} />{errors.phone.message}</p>
-                    )}
-                  </div>
+                  </Field>
                 </div>
 
-                {/* Job Role */}
-                <div>
-                  <label htmlFor="job_role" className="label">
-                    Role Applied For <span className="text-status-error">*</span>
-                  </label>
+                <Field label="Role Applied For" required error={errors.job_role?.message}>
                   <div className="relative">
                     <Briefcase size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-pine-slate-light z-10" />
                     <input
                       id="job_role"
                       type="text"
                       list="job-roles"
-                      placeholder="e.g. Software Engineer"
+                      placeholder="e.g. Software Engineer — Platform & Payments"
                       className={`input-field pl-10 ${errors.job_role ? 'input-error' : ''}`}
                       {...register('job_role')}
                     />
@@ -257,59 +267,42 @@ export default function SubmissionPage() {
                       {JOB_ROLES.map(r => <option key={r} value={r} />)}
                     </datalist>
                   </div>
-                  {errors.job_role && (
-                    <p className="error-text"><AlertCircle size={12} />{errors.job_role.message}</p>
-                  )}
-                </div>
+                </Field>
 
-                {/* Social links */}
-                <div className="divider pt-1" />
-                <div>
-                  <p className="text-sm font-semibold text-pine-navy mb-3">
-                    Professional Links <span className="text-pine-slate-light font-normal">(optional)</span>
+                <div className="border-t border-pine-border pt-5">
+                  <p className="text-sm font-semibold text-pine-forest mb-3">
+                    Professional Links <span className="text-pine-slate-light font-normal text-xs">(optional)</span>
                   </p>
                   <div className="space-y-3">
-                    <div>
-                      <div className="relative">
-                        <GitBranch size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-pine-slate-light" />
-                        <input
-                          type="url"
-                          placeholder="https://github.com/yourusername"
-                          className={`input-field pl-10 ${errors.github_url ? 'input-error' : ''}`}
-                          {...register('github_url')}
-                        />
-                      </div>
-                      {errors.github_url && (
-                        <p className="error-text"><AlertCircle size={12} />{errors.github_url.message}</p>
-                      )}
+                    <div className="relative">
+                      <GitBranch size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-pine-slate-light" />
+                      <input
+                        type="url"
+                        placeholder="https://github.com/yourusername"
+                        className={`input-field pl-10 ${errors.github_url ? 'input-error' : ''}`}
+                        {...register('github_url')}
+                      />
+                      {errors.github_url && <p className="error-text"><AlertCircle size={12} />{errors.github_url.message}</p>}
                     </div>
-                    <div>
-                      <div className="relative">
-                        <Link2 size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-pine-slate-light" />
-                        <input
-                          type="url"
-                          placeholder="https://linkedin.com/in/yourprofile"
-                          className={`input-field pl-10 ${errors.linkedin_url ? 'input-error' : ''}`}
-                          {...register('linkedin_url')}
-                        />
-                      </div>
-                      {errors.linkedin_url && (
-                        <p className="error-text"><AlertCircle size={12} />{errors.linkedin_url.message}</p>
-                      )}
+                    <div className="relative">
+                      <Link2 size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-pine-slate-light" />
+                      <input
+                        type="url"
+                        placeholder="https://linkedin.com/in/yourprofile"
+                        className={`input-field pl-10 ${errors.linkedin_url ? 'input-error' : ''}`}
+                        {...register('linkedin_url')}
+                      />
+                      {errors.linkedin_url && <p className="error-text"><AlertCircle size={12} />{errors.linkedin_url.message}</p>}
                     </div>
-                    <div>
-                      <div className="relative">
-                        <Globe size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-pine-slate-light" />
-                        <input
-                          type="url"
-                          placeholder="https://yourportfolio.com"
-                          className={`input-field pl-10 ${errors.portfolio_url ? 'input-error' : ''}`}
-                          {...register('portfolio_url')}
-                        />
-                      </div>
-                      {errors.portfolio_url && (
-                        <p className="error-text"><AlertCircle size={12} />{errors.portfolio_url.message}</p>
-                      )}
+                    <div className="relative">
+                      <Globe size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-pine-slate-light" />
+                      <input
+                        type="url"
+                        placeholder="https://yourportfolio.com"
+                        className={`input-field pl-10 ${errors.portfolio_url ? 'input-error' : ''}`}
+                        {...register('portfolio_url')}
+                      />
+                      {errors.portfolio_url && <p className="error-text"><AlertCircle size={12} />{errors.portfolio_url.message}</p>}
                     </div>
                   </div>
                 </div>
@@ -323,15 +316,13 @@ export default function SubmissionPage() {
             </div>
           )}
 
-          {/* Step 2: Resume */}
+          {/* ── Step 2: Resume ── */}
           {step === 2 && (
             <div className="card p-6 sm:p-8 animate-slide-up">
-              <div className="mb-6">
-                <h2 className="text-xl font-bold text-pine-navy">Upload Your Resume</h2>
-                <p className="text-sm text-pine-slate-light mt-1">
-                  Your resume will be analyzed to extract your experience, skills, and projects.
-                </p>
-              </div>
+              <StepBadge num={2} label="Upload Your Resume" />
+              <p className="text-sm text-pine-slate mb-6">
+                Upload a current PDF or DOCX resume covering your experience, skills, and projects.
+              </p>
 
               <FileUpload
                 id="resume"
@@ -345,13 +336,13 @@ export default function SubmissionPage() {
                 icon={<FileText size={22} className="text-pine-slate-light" />}
                 hint={
                   <div className="space-y-1">
-                    <p className="text-xs font-semibold text-pine-navy flex items-center gap-1.5">
-                      <Info size={12} className="text-pine-green" /> What we look for in your resume
+                    <p className="text-xs font-semibold text-pine-forest flex items-center gap-1.5">
+                      <Info size={12} className="text-pine-forest" /> What we look for
                     </p>
                     <ul className="text-xs text-pine-slate-light space-y-0.5 ml-4 list-disc">
                       <li>Work experience and internships</li>
                       <li>Technical skills and programming languages</li>
-                      <li>Projects and their technologies</li>
+                      <li>Projects and technologies used</li>
                       <li>Education and certifications</li>
                     </ul>
                   </div>
@@ -369,15 +360,13 @@ export default function SubmissionPage() {
             </div>
           )}
 
-          {/* Step 3: Project ZIP */}
+          {/* ── Step 3: Project ── */}
           {step === 3 && (
             <div className="card p-6 sm:p-8 animate-slide-up">
-              <div className="mb-6">
-                <h2 className="text-xl font-bold text-pine-navy">Upload Your Project</h2>
-                <p className="text-sm text-pine-slate-light mt-1">
-                  Share a software project you're proud of. It will be analyzed statically — your code will never be executed.
-                </p>
-              </div>
+              <StepBadge num={3} label="Upload Your Project" />
+              <p className="text-sm text-pine-slate mb-6">
+                Share a project you are proud of. Include a README explaining your thinking and design choices.
+              </p>
 
               <FileUpload
                 id="project_zip"
@@ -391,25 +380,24 @@ export default function SubmissionPage() {
                 icon={<Archive size={22} className="text-pine-slate-light" />}
                 hint={
                   <div className="space-y-2">
-                    <p className="text-xs font-semibold text-pine-navy flex items-center gap-1.5">
-                      <Info size={12} className="text-pine-green" /> What to include in your ZIP
+                    <p className="text-xs font-semibold text-pine-forest flex items-center gap-1.5">
+                      <Info size={12} className="text-pine-forest" /> What to include
                     </p>
-                    <div className="grid sm:grid-cols-2 gap-2">
+                    <div className="grid sm:grid-cols-2 gap-1.5">
                       {[
                         '✓ README describing the project',
                         '✓ Source code files',
                         '✓ requirements.txt / package.json',
                         '✓ Configuration files',
                         '✓ Tests (if available)',
-                        '✓ Problem statement or description',
+                        '✓ Problem statement',
                       ].map(item => (
                         <p key={item} className="text-xs text-pine-slate-light">{item}</p>
                       ))}
                     </div>
                     <p className="text-xs text-pine-slate-light border-t border-pine-border pt-2 mt-1">
-                      <span className="font-semibold text-pine-navy">Privacy note:</span> Your code
-                      is analyzed using a configured LLM for evaluation purposes and is not stored
-                      beyond this hiring process.
+                      <span className="font-semibold text-pine-forest">Privacy note:</span> Your code is
+                      reviewed by the hiring team and not stored beyond this hiring process.
                     </p>
                   </div>
                 }
@@ -426,19 +414,20 @@ export default function SubmissionPage() {
             </div>
           )}
 
-          {/* Step 4: Review */}
+          {/* ── Step 4: Review & Submit ── */}
           {step === 4 && (
             <div className="space-y-4 animate-slide-up">
               <div className="card p-6 sm:p-8">
-                <h2 className="text-xl font-bold text-pine-navy mb-6">Review Your Application</h2>
+                <StepBadge num={4} label="Review Your Application" />
 
-                {/* Candidate info review */}
+                {/* Candidate info */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-pine-navy uppercase tracking-wider text-xs">
+                    <h3 className="text-xs font-bold text-pine-slate uppercase tracking-widest">
                       Personal Information
                     </h3>
-                    <button type="button" onClick={() => setStep(1)} className="text-xs text-pine-green hover:underline font-medium">
+                    <button type="button" onClick={() => setStep(1)}
+                      className="text-xs text-pine-forest hover:underline font-semibold">
                       Edit
                     </button>
                   </div>
@@ -454,60 +443,61 @@ export default function SubmissionPage() {
                     ].map(({ label, value }) => (
                       <div key={label} className="bg-pine-cream rounded-xl p-3">
                         <p className="text-xs text-pine-slate-light font-medium">{label}</p>
-                        <p className="text-sm font-semibold text-pine-navy mt-0.5 break-all">{value}</p>
+                        <p className="text-sm font-semibold text-pine-forest mt-0.5 break-all">{value}</p>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="divider my-6" />
+                <div className="border-t border-pine-border my-6" />
 
-                {/* Files review */}
+                {/* Files */}
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-bold text-pine-navy uppercase tracking-wider">
-                      Uploaded Files
-                    </h3>
-                  </div>
-                  <div className="space-y-2">
-                    {resumeFile && (
-                      <div className="flex items-center gap-3 p-3 bg-pine-green-light rounded-xl">
-                        <FileText size={18} className="text-pine-green flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-pine-navy truncate">{resumeFile.name}</p>
-                          <p className="text-xs text-pine-slate-light">Resume · {(resumeFile.size / 1024).toFixed(0)} KB</p>
-                        </div>
-                        <button type="button" onClick={() => { setResumeFile(null); setStep(2) }}
-                          className="text-xs text-pine-slate-light hover:text-pine-navy">Replace</button>
+                  <h3 className="text-xs font-bold text-pine-slate uppercase tracking-widest mb-3">
+                    Uploaded Files
+                  </h3>
+                  {resumeFile && (
+                    <div className="flex items-center gap-3 p-3 bg-pine-lime-light border border-pine-lime/30 rounded-xl">
+                      <div className="w-9 h-9 rounded-xl bg-pine-lime/30 flex items-center justify-center flex-shrink-0">
+                        <FileText size={16} className="text-pine-forest" />
                       </div>
-                    )}
-                    {projectFile && (
-                      <div className="flex items-center gap-3 p-3 bg-pine-green-light rounded-xl">
-                        <Archive size={18} className="text-pine-green flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-pine-navy truncate">{projectFile.name}</p>
-                          <p className="text-xs text-pine-slate-light">Project ZIP · {(projectFile.size / 1024).toFixed(0)} KB</p>
-                        </div>
-                        <button type="button" onClick={() => { setProjectFile(null); setStep(3) }}
-                          className="text-xs text-pine-slate-light hover:text-pine-navy">Replace</button>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-pine-forest truncate">{resumeFile.name}</p>
+                        <p className="text-xs text-pine-slate">Resume · {(resumeFile.size / 1024).toFixed(0)} KB</p>
                       </div>
-                    )}
-                  </div>
+                      <CheckCircle2 size={16} className="text-pine-forest flex-shrink-0" />
+                      <button type="button" onClick={() => { setResumeFile(null); setStep(2) }}
+                        className="text-xs text-pine-slate hover:text-pine-forest font-medium ml-1">Replace</button>
+                    </div>
+                  )}
+                  {projectFile && (
+                    <div className="flex items-center gap-3 p-3 bg-pine-lime-light border border-pine-lime/30 rounded-xl">
+                      <div className="w-9 h-9 rounded-xl bg-pine-lime/30 flex items-center justify-center flex-shrink-0">
+                        <Archive size={16} className="text-pine-forest" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-pine-forest truncate">{projectFile.name}</p>
+                        <p className="text-xs text-pine-slate">Project ZIP · {(projectFile.size / 1024).toFixed(0)} KB</p>
+                      </div>
+                      <CheckCircle2 size={16} className="text-pine-forest flex-shrink-0" />
+                      <button type="button" onClick={() => { setProjectFile(null); setStep(3) }}
+                        className="text-xs text-pine-slate hover:text-pine-forest font-medium ml-1">Replace</button>
+                    </div>
+                  )}
                 </div>
 
-                <div className="divider my-6" />
+                <div className="border-t border-pine-border my-6" />
 
-                {/* Privacy notice */}
-                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-                  <p className="text-xs text-blue-700">
-                    <span className="font-semibold">Privacy Notice:</span> Your submitted files will
-                    be processed by Pine Labs' AI evaluation system using the Groq API for the
-                    sole purpose of this hiring evaluation. Files are not shared externally beyond
-                    the configured LLM provider.
+                {/* Privacy */}
+                <div className="bg-pine-cream rounded-xl p-4">
+                  <p className="text-xs text-pine-slate leading-relaxed">
+                    <span className="font-semibold text-pine-forest">Privacy Notice: </span>
+                    Your submitted files will be processed by Pine Labs' internal evaluation
+                    system for the sole purpose of this hiring process. Files are not shared externally.
                   </p>
                 </div>
 
-                {/* Submit error */}
+                {/* Error */}
                 {submitError && (
                   <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
                     <AlertCircle size={16} className="text-status-error flex-shrink-0 mt-0.5" />
@@ -517,14 +507,14 @@ export default function SubmissionPage() {
 
                 {/* Upload progress */}
                 {isSubmitting && uploadProgress > 0 && uploadProgress < 100 && (
-                  <div className="mt-4">
-                    <div className="flex justify-between text-xs text-pine-slate mb-1">
-                      <span>Uploading files...</span>
+                  <div className="mt-5">
+                    <div className="flex justify-between text-xs text-pine-slate mb-1.5">
+                      <span>Uploading files…</span>
                       <span>{uploadProgress}%</span>
                     </div>
                     <div className="h-2 bg-pine-cream rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-pine-green rounded-full transition-all duration-300"
+                        className="h-full bg-pine-lime rounded-full transition-all duration-300"
                         style={{ width: `${uploadProgress}%` }}
                       />
                     </div>
@@ -535,15 +525,11 @@ export default function SubmissionPage() {
                   <button type="button" onClick={() => goToStep(3)} className="btn-secondary" disabled={isSubmitting}>
                     <ArrowLeft size={16} /> Back
                   </button>
-                  <button
-                    type="submit"
-                    className="btn-primary min-w-[160px]"
-                    disabled={isSubmitting}
-                  >
+                  <button type="submit" className="btn-primary min-w-[180px]" disabled={isSubmitting}>
                     {isSubmitting ? (
                       <>
                         <div className="spinner w-4 h-4" />
-                        Submitting...
+                        Submitting…
                       </>
                     ) : (
                       <>

@@ -81,6 +81,7 @@ class SubmissionRepository:
         search: str | None = None,
         role_filter: str | None = None,
         status_filter: str | None = None,
+        review_filter: str | None = None,
     ) -> tuple[list[Submission], int]:
         query = select(Submission)
 
@@ -96,6 +97,8 @@ class SubmissionRepository:
             query = query.where(Submission.job_role.ilike(f"%{role_filter}%"))
         if status_filter:
             query = query.where(Submission.status == status_filter)
+        if review_filter:
+            query = query.where(Submission.review_status == review_filter)
 
         count_query = select(func.count()).select_from(query.subquery())
         total_result = await self.db.execute(count_query)
@@ -106,6 +109,44 @@ class SubmissionRepository:
         submissions = list(result.scalars().all())
 
         return submissions, total
+
+    async def update_review(
+        self,
+        submission_id: str,
+        review_status: str,
+        review_checklist: dict | None = None,
+        reviewed_by: str | None = "Hiring Team",
+    ) -> Submission | None:
+        sub = await self.get_by_id(submission_id)
+        if not sub:
+            return None
+        sub.review_status = review_status
+        sub.reviewed_at = utcnow()
+        if reviewed_by:
+            sub.reviewed_by = reviewed_by
+        if review_checklist is not None:
+            sub.review_checklist = json.dumps(review_checklist)
+        sub.updated_at = utcnow()
+        await self.db.flush()
+        await self.db.refresh(sub)
+        return sub
+
+    async def record_invitation_sent(
+        self,
+        submission_id: str,
+        interview_details: dict,
+    ) -> Submission | None:
+        sub = await self.get_by_id(submission_id)
+        if not sub:
+            return None
+        sub.review_status = "shortlisted"
+        sub.email_sent = True
+        sub.email_sent_at = utcnow()
+        sub.interview_details = json.dumps(interview_details)
+        sub.updated_at = utcnow()
+        await self.db.flush()
+        await self.db.refresh(sub)
+        return sub
 
     async def get_stats(self) -> dict:
         total = await self.db.execute(select(func.count(Submission.id)))
@@ -135,9 +176,21 @@ class SubmissionRepository:
                 )
             )
         )
+        reviewed = await self.db.execute(
+            select(func.count(Submission.id)).where(
+                Submission.review_status.in_(["reviewed", "shortlisted"])
+            )
+        )
+        shortlisted = await self.db.execute(
+            select(func.count(Submission.id)).where(
+                Submission.review_status == "shortlisted"
+            )
+        )
         return {
             "total": total.scalar() or 0,
             "pending": pending.scalar() or 0,
             "completed": completed.scalar() or 0,
             "failed": failed.scalar() or 0,
+            "reviewed": reviewed.scalar() or 0,
+            "shortlisted": shortlisted.scalar() or 0,
         }

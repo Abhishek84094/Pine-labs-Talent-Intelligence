@@ -4,11 +4,34 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pine Labs — Talent Intelligence</title>
-    <meta name="description" content="AI-powered candidate project and resume evaluation platform for Pine Labs technical hiring." />
+    <title>Pine Labs — Careers · Software Engineer Platform & Payments</title>
+    <meta name="description" content="Apply to join Pine Labs — the commerce infrastructure company powering payments for millions of merchants across Asia. Upload your resume and project for review." />
     <meta name="robots" content="noindex, nofollow" />
+
+    <!-- Poppins & Inter — Pine Labs brand fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Pine Labs — Careers · Software Engineer" />
+    <meta property="og:description" content="Build the infrastructure behind everyday commerce. Apply now." />
+    <meta property="og:type" content="website" />
+
+    <!-- Prevent FOUC -->
+    <style>
+      html { background: #00262C; }
+      body { opacity: 0; transition: opacity 0.2s; }
+      body.loaded { opacity: 1; }
+    </style>
+    <script>
+      window.addEventListener('DOMContentLoaded', () => {
+        document.body.classList.add('loaded');
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>

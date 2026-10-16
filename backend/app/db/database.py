@@ -37,3 +37,23 @@ async def get_db():
 async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+        def _migrate(sync_conn):
+            from sqlalchemy import text
+            result = sync_conn.execute(text("PRAGMA table_info(submissions)"))
+            existing_columns = {row[1] for row in result.fetchall()}
+
+            column_definitions = [
+                ("review_status", "VARCHAR(50) DEFAULT 'pending'"),
+                ("review_checklist", "TEXT"),
+                ("reviewed_at", "DATETIME"),
+                ("reviewed_by", "VARCHAR(100)"),
+                ("email_sent", "BOOLEAN DEFAULT 0"),
+                ("email_sent_at", "DATETIME"),
+                ("interview_details", "TEXT"),
+            ]
+            for col_name, col_type in column_definitions:
+                if col_name not in existing_columns:
+                    sync_conn.execute(text(f"ALTER TABLE submissions ADD COLUMN {col_name} {col_type}"))
+
+        await conn.run_sync(_migrate)

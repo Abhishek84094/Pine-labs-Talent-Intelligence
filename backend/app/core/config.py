@@ -32,6 +32,15 @@ class Settings(BaseSettings):
     # CORS
     frontend_origin: str = "http://localhost:5173"
 
+    # SMTP / Email Configuration
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from_email: str = "careers@pinelabs.com"
+    smtp_from_name: str = "Pine Labs Talent Intelligence"
+    smtp_use_tls: bool = True
+
     # LLM limits
     max_resume_text_chars: int = 8000
     max_project_context_chars: int = 15000

@@ -1,7 +1,7 @@
 """SQLAlchemy database models"""
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import String, Text, DateTime, Integer, Float, JSON, Enum as SQLEnum
+from sqlalchemy import String, Text, DateTime, Integer, Float, JSON, Boolean, Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db.database import Base
 import enum
@@ -67,6 +67,21 @@ class Submission(Base):
 
     # LLM config used
     model_used: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
+    # Hiring Review & Shortlist Checklist
+    review_status: Mapped[str] = mapped_column(
+        String(50), default="pending", nullable=False
+    )  # pending, reviewed, shortlisted, rejected
+    review_checklist: Mapped[str | None] = mapped_column(Text, nullable=True)  # JSON checklist
+    reviewed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    reviewed_by: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    email_sent: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    email_sent_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    interview_details: Mapped[str | None] = mapped_column(Text, nullable=True)  # JSON schedule
 
     # Timestamps
     submitted_at: Mapped[datetime] = mapped_column(
