@@ -39,20 +39,20 @@ function Section({ title, icon, children, defaultOpen = true }: {
     <div className="card overflow-hidden mb-4 print:border-none print:shadow-none print:mb-6">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between p-5 text-left hover:bg-pine-cream transition-colors print:p-0 print:mb-2"
+        className="w-full flex items-center justify-between p-3.5 sm:p-5 text-left hover:bg-pine-cream transition-colors print:p-0 print:mb-2"
       >
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-pine-forest text-pine-lime flex items-center justify-center flex-shrink-0 print:hidden">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-pine-forest text-pine-lime flex items-center justify-center flex-shrink-0 print:hidden">
             {icon}
           </div>
-          <h2 className="font-bold text-pine-forest text-base">{title}</h2>
+          <h2 className="font-bold text-pine-forest text-sm sm:text-base">{title}</h2>
         </div>
         <div className="print:hidden">
           {open ? <ChevronUp size={16} className="text-pine-slate-light" /> : <ChevronDown size={16} className="text-pine-slate-light" />}
         </div>
       </button>
       {(open || true) && (
-        <div className={`px-5 pb-5 border-t border-pine-border animate-fade-in print:border-none print:p-0 ${open ? 'block' : 'hidden print:block'}`}>
+        <div className={`px-3.5 sm:px-5 pb-3.5 sm:pb-5 border-t border-pine-border animate-fade-in print:border-none print:p-0 ${open ? 'block' : 'hidden print:block'}`}>
           {children}
         </div>
       )}
@@ -338,24 +338,24 @@ export default function ReportPage() {
 
       {/* Top Banner */}
       <div className="bg-pine-forest-deep text-white print:bg-white print:text-black">
-        <div className="max-w-5xl mx-auto px-6 py-8">
-          <Link to="/dashboard" className="text-white/60 hover:text-white text-xs font-semibold flex items-center gap-1.5 mb-4 print:hidden">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+          <Link to="/dashboard" className="text-white/60 hover:text-white text-xs font-semibold flex items-center gap-1.5 mb-3 sm:mb-4 print:hidden">
             <ArrowLeft size={14} /> Back to Hiring Dashboard
           </Link>
 
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-pine-lime bg-white/10 px-2 py-0.5 rounded">
+                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-pine-lime bg-white/10 px-2 py-0.5 rounded">
                   CONFIDENTIAL TECHNICAL REPORT
                 </span>
-                <span className="text-white/40 font-mono text-xs">· {reference_id}</span>
+                <span className="text-white/40 font-mono text-[11px] sm:text-xs">· {reference_id}</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white print:text-black">{candidate.name}</h1>
-              <p className="text-white/70 text-sm mt-1">{candidate.role}</p>
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white print:text-black">{candidate.name}</h1>
+              <p className="text-white/70 text-xs sm:text-sm mt-1">{candidate.role}</p>
 
               {/* Candidate social / links */}
-              <div className="flex items-center gap-3 mt-3 print:hidden">
+              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 mt-3 print:hidden">
                 {candidate.email && (
                   <span className="text-xs text-white/60 font-mono flex items-center gap-1">
                     <Mail size={12} /> {candidate.email}
@@ -377,11 +377,11 @@ export default function ReportPage() {
             </div>
 
             {/* Export buttons */}
-            <div className="flex flex-wrap gap-2 print:hidden">
+            <div className="flex flex-wrap gap-2 print:hidden w-full sm:w-auto pt-2 sm:pt-0">
               <button
                 onClick={exportPDF}
                 disabled={isExportingPDF}
-                className="btn-primary text-xs flex items-center gap-1.5 shadow-sm"
+                className="btn-primary text-xs flex-1 sm:flex-initial flex items-center justify-center gap-1.5 shadow-sm py-2 px-3"
                 title="Download formatted PDF report"
               >
                 {isExportingPDF ? (
@@ -399,7 +399,7 @@ export default function ReportPage() {
 
               <button
                 onClick={exportMarkdown}
-                className="btn-secondary text-xs bg-white/10 border-white/20 text-white hover:bg-white/20"
+                className="btn-secondary text-xs bg-white/10 border-white/20 text-white hover:bg-white/20 flex-1 sm:flex-initial flex items-center justify-center py-2 px-3"
                 title="Download markdown notes"
               >
                 <Download size={13} /> Markdown
@@ -407,7 +407,7 @@ export default function ReportPage() {
 
               <button
                 onClick={exportJSON}
-                className="btn-secondary text-xs bg-white/10 border-white/20 text-white hover:bg-white/20"
+                className="btn-secondary text-xs bg-white/10 border-white/20 text-white hover:bg-white/20 flex-1 sm:flex-initial flex items-center justify-center py-2 px-3"
                 title="Download raw evaluation JSON"
               >
                 <Download size={13} /> JSON
@@ -417,7 +417,7 @@ export default function ReportPage() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Success notification */}
         {successBanner && (
           <div className="p-4 bg-pine-lime/20 border border-pine-lime text-pine-forest rounded-xl flex items-center gap-3 mb-6 animate-fade-in shadow-xs">
@@ -427,13 +427,13 @@ export default function ReportPage() {
         )}
 
         {/* Hiring Action & Review Status Bar */}
-        <div className="card p-5 mb-6 border-l-4 border-pine-forest flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-pine-cream flex items-center justify-center flex-shrink-0">
-              <CheckSquare size={20} className="text-pine-forest" />
+        <div className="card p-4 sm:p-5 mb-6 border-l-4 border-pine-forest flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
+          <div className="flex items-start sm:items-center gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-pine-cream flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-0">
+              <CheckSquare size={18} className="sm:w-5 sm:h-5 text-pine-forest" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                 <span className="text-xs font-bold text-pine-slate-light uppercase tracking-wider">Hiring Decision</span>
                 {emailSent && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
@@ -441,8 +441,8 @@ export default function ReportPage() {
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className={`badge font-semibold ${
+              <div className="flex flex-wrap items-center gap-2 mt-1 sm:mt-0.5">
+                <span className={`badge font-semibold text-xs ${
                   reviewStatus === 'shortlisted' ? 'badge-green' :
                   reviewStatus === 'reviewed' ? 'badge-info' :
                   reviewStatus === 'rejected' ? 'badge-error' :
@@ -451,25 +451,25 @@ export default function ReportPage() {
                   Status: {reviewStatus.toUpperCase()}
                 </span>
                 <span className="text-xs text-pine-slate-light">
-                  {reviewStatus === 'shortlisted' ? 'Selected for online assessment & interview rounds' :
-                   reviewStatus === 'reviewed' ? 'Summary & codebase checked by team' :
-                   'Pending review by hiring team'}
+                  {reviewStatus === 'shortlisted' ? 'Selected for interview rounds' :
+                   reviewStatus === 'reviewed' ? 'Checked by team' :
+                   'Pending review'}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2">
             <button
               onClick={() => setShowChecklistModal(true)}
-              className="btn-secondary text-xs flex items-center gap-1.5"
+              className="btn-secondary text-xs flex items-center justify-center gap-1.5 py-2 px-3"
             >
               <CheckSquare size={14} />
               Review Checklist
             </button>
             <button
               onClick={() => setShowInvitationModal(true)}
-              className="btn-primary text-xs flex items-center gap-1.5"
+              className="btn-primary text-xs flex items-center justify-center gap-1.5 py-2 px-3 shadow-sm"
             >
               <Mail size={14} />
               Shortlist & Send Email
@@ -478,7 +478,7 @@ export default function ReportPage() {
         </div>
 
         {/* Printable/Capture Report Document Body */}
-        <div id="report-document-body" className="space-y-6 bg-white p-6 sm:p-8 rounded-2xl border border-pine-border shadow-xs">
+        <div id="report-document-body" className="space-y-6 bg-white p-4 sm:p-8 rounded-2xl border border-pine-border shadow-xs">
           
           {/* Print only header */}
           <div className="hidden print:block border-b border-black pb-4 mb-6">

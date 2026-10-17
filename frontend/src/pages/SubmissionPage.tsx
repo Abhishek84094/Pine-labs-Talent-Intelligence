@@ -176,15 +176,15 @@ export default function SubmissionPage() {
 
       {/* Hero band */}
       <div className="bg-pine-forest-deep text-white">
-        <div className="max-w-3xl mx-auto px-6 py-10">
-          <div className="flex items-center gap-2 text-pine-lime text-xs font-semibold mb-3 uppercase tracking-widest">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+          <div className="flex items-center gap-2 text-pine-lime text-xs font-semibold mb-2 sm:mb-3 uppercase tracking-widest">
             <div className="w-4 h-px bg-pine-lime" />
             Application Form
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2">
             Submit Your Application
           </h1>
-          <p className="text-white/50 text-sm max-w-lg leading-relaxed">
+          <p className="text-white/60 text-xs sm:text-sm max-w-lg leading-relaxed">
             Share your resume and a project you are proud of. The hiring team will
             review your submission — no automated gatekeeping.
           </p>
@@ -193,18 +193,18 @@ export default function SubmissionPage() {
 
       {/* Step indicator */}
       <div className="bg-white border-b border-pine-border sticky top-14 z-30">
-        <div className="max-w-3xl mx-auto px-6 py-5 flex justify-center">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-3.5 sm:py-5 flex justify-center">
           <StepIndicator steps={STEPS} currentStep={step} />
         </div>
       </div>
 
       {/* Form content */}
-      <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <form onSubmit={handleSubmit(onSubmit)}>
 
           {/* ── Step 1: Candidate Info ── */}
           {step === 1 && (
-            <div className="card p-6 sm:p-8 animate-slide-up">
+            <div className="card p-4 sm:p-8 animate-slide-up">
               <StepBadge num={1} label="Your Information" />
               <p className="text-sm text-pine-slate mb-6">
                 Tell us about yourself. This helps us identify your application and reach you.
@@ -318,7 +318,7 @@ export default function SubmissionPage() {
 
           {/* ── Step 2: Resume ── */}
           {step === 2 && (
-            <div className="card p-6 sm:p-8 animate-slide-up">
+            <div className="card p-4 sm:p-8 animate-slide-up">
               <StepBadge num={2} label="Upload Your Resume" />
               <p className="text-sm text-pine-slate mb-6">
                 Upload a current PDF or DOCX resume covering your experience, skills, and projects.
@@ -362,7 +362,7 @@ export default function SubmissionPage() {
 
           {/* ── Step 3: Project ── */}
           {step === 3 && (
-            <div className="card p-6 sm:p-8 animate-slide-up">
+            <div className="card p-4 sm:p-8 animate-slide-up">
               <StepBadge num={3} label="Upload Your Project" />
               <p className="text-sm text-pine-slate mb-6">
                 Share a project you are proud of. Include a README explaining your thinking and design choices.
@@ -417,7 +417,7 @@ export default function SubmissionPage() {
           {/* ── Step 4: Review & Submit ── */}
           {step === 4 && (
             <div className="space-y-4 animate-slide-up">
-              <div className="card p-6 sm:p-8">
+              <div className="card p-4 sm:p-8">
                 <StepBadge num={4} label="Review Your Application" />
 
                 {/* Candidate info */}
@@ -521,11 +521,11 @@ export default function SubmissionPage() {
                   </div>
                 )}
 
-                <div className="mt-8 flex justify-between">
-                  <button type="button" onClick={() => goToStep(3)} className="btn-secondary" disabled={isSubmitting}>
+                <div className="mt-8 flex flex-col-reverse sm:flex-row justify-between gap-3 sm:gap-0">
+                  <button type="button" onClick={() => goToStep(3)} className="btn-secondary w-full sm:w-auto justify-center" disabled={isSubmitting}>
                     <ArrowLeft size={16} /> Back
                   </button>
-                  <button type="submit" className="btn-primary min-w-[180px]" disabled={isSubmitting}>
+                  <button type="submit" className="btn-primary w-full sm:w-auto min-w-0 sm:min-w-[180px] justify-center" disabled={isSubmitting}>
                     {isSubmitting ? (
                       <>
                         <div className="spinner w-4 h-4" />

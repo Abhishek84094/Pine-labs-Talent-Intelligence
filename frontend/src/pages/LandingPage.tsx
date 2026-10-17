@@ -174,13 +174,13 @@ export default function LandingPage() {
 
             {/* CTA row */}
             <div className="flex flex-wrap gap-3 animate-fade-up animation-fill-both animation-delay-400">
-              <button onClick={scrollToApply} className="btn-primary text-base px-8 py-3.5 shadow-lime animate-pulse-lime">
+              <button onClick={scrollToApply} className="btn-primary text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-3.5 shadow-lime animate-pulse-lime flex-1 sm:flex-initial justify-center">
                 Apply Now
                 <ArrowRight size={16} />
               </button>
               <button
                 onClick={() => document.getElementById('role')?.scrollIntoView({ behavior: 'smooth' })}
-                className="btn-outline-white text-sm"
+                className="btn-outline-white text-sm flex-1 sm:flex-initial justify-center"
               >
                 See the role
               </button>
@@ -189,7 +189,7 @@ export default function LandingPage() {
 
           {/* Right: stats card */}
           <div className="lg:flex-shrink-0 w-full lg:w-auto animate-fade-up animation-fill-both animation-delay-500">
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-sm grid grid-cols-2 gap-8 min-w-[300px]">
+            <div className="bg-white/5 border border-white/10 rounded-3xl p-5 sm:p-8 backdrop-blur-sm grid grid-cols-2 gap-4 sm:gap-8 w-full max-w-sm mx-auto lg:mx-0">
               <StatCounter value={10} suffix="M+" label="Merchants served" />
               <StatCounter value={150} suffix="M+" label="Transactions daily" />
               <StatCounter value={500} suffix="+" label="Banks & NBFCs" />
@@ -431,7 +431,7 @@ export default function LandingPage() {
 
           {/* Preparation checklist */}
           <Reveal>
-            <div className="bg-pine-cream rounded-3xl p-8 lg:p-12">
+            <div className="bg-pine-cream rounded-3xl p-5 sm:p-8 lg:p-12">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
                 <div>
                   <p className="section-eyebrow-dark mb-2">Before you submit</p>

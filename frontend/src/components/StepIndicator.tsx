@@ -23,7 +23,7 @@ export default function StepIndicator({ steps, currentStep }: StepIndicatorProps
             {/* Step circle */}
             <div className="flex flex-col items-center">
               <div
-                className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
+                className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-[11px] sm:text-xs font-bold transition-all duration-300 ${
                   isCompleted
                     ? 'bg-pine-forest text-pine-lime'
                     : isActive
@@ -31,10 +31,10 @@ export default function StepIndicator({ steps, currentStep }: StepIndicatorProps
                     : 'bg-pine-cream text-pine-slate-light border-2 border-pine-border'
                 }`}
               >
-                {isCompleted ? <Check size={14} strokeWidth={3} /> : step.number}
+                {isCompleted ? <Check size={13} className="sm:w-3.5 sm:h-3.5" strokeWidth={3} /> : step.number}
               </div>
               <span
-                className={`mt-1.5 text-[10px] font-semibold whitespace-nowrap transition-colors ${
+                className={`mt-1 sm:mt-1.5 text-[8.5px] sm:text-[10px] font-semibold whitespace-nowrap transition-colors ${
                   isActive ? 'text-pine-forest' : isCompleted ? 'text-pine-slate' : 'text-pine-slate-light'
                 }`}
               >
@@ -45,7 +45,7 @@ export default function StepIndicator({ steps, currentStep }: StepIndicatorProps
             {/* Connector line */}
             {!isLast && (
               <div
-                className={`h-0.5 w-10 sm:w-16 md:w-20 mx-1 mb-5 transition-all duration-500 rounded-full ${
+                className={`h-0.5 w-6 sm:w-14 md:w-20 mx-0.5 sm:mx-1 mb-4 sm:mb-5 transition-all duration-500 rounded-full ${
                   isCompleted ? 'bg-pine-forest' : 'bg-pine-border'
                 }`}
               />

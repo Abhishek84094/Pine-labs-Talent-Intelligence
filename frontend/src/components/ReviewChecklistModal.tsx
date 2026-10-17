@@ -140,49 +140,49 @@ export default function ReviewChecklistModal({
   const progressPct = Math.round((checkedCount / CHECKLIST_ITEMS.length) * 100)
 
   return (
-    <div className="fixed inset-0 bg-pine-forest/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-      <div className="bg-white rounded-2xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-pine-border overflow-hidden">
+    <div className="fixed inset-0 bg-pine-forest/70 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4 animate-fade-in">
+      <div className="bg-white rounded-2xl max-w-xl w-full max-h-[92vh] sm:max-h-[90vh] flex flex-col shadow-2xl border border-pine-border overflow-hidden">
         
         {/* Header */}
-        <div className="bg-pine-forest-deep text-white px-6 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-pine-lime text-pine-forest flex items-center justify-center font-bold">
-              <CheckSquare size={20} />
+        <div className="bg-pine-forest-deep text-white px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-pine-lime text-pine-forest flex items-center justify-center font-bold flex-shrink-0">
+              <CheckSquare size={18} className="sm:w-5 sm:h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-pine-lime">Evaluation Review</span>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-pine-lime">Evaluation Review</span>
                 <span className="text-white/40">·</span>
-                <span className="text-xs text-white/70 font-mono">{candidate.reference_id}</span>
+                <span className="text-[11px] sm:text-xs text-white/70 font-mono">{candidate.reference_id}</span>
               </div>
-              <h2 className="text-lg font-bold text-white">{candidate.full_name}</h2>
-              <p className="text-xs text-white/60">{candidate.job_role}</p>
+              <h2 className="text-base sm:text-lg font-bold text-white leading-snug">{candidate.full_name}</h2>
+              <p className="text-[11px] sm:text-xs text-white/60">{candidate.job_role}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors flex-shrink-0"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Progress bar */}
-        <div className="bg-pine-cream border-b border-pine-border px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold text-pine-forest">Checklist Progress:</span>
-            <div className="w-32 h-2 bg-pine-border rounded-full overflow-hidden">
+        <div className="bg-pine-cream border-b border-pine-border px-4 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="text-[11px] sm:text-xs font-semibold text-pine-forest">Progress:</span>
+            <div className="w-20 sm:w-32 h-2 bg-pine-border rounded-full overflow-hidden">
               <div
                 className="h-full bg-pine-forest rounded-full transition-all duration-300"
                 style={{ width: `${progressPct}%` }}
               />
             </div>
-            <span className="text-xs font-bold text-pine-forest">{checkedCount}/{CHECKLIST_ITEMS.length} ({progressPct}%)</span>
+            <span className="text-[11px] sm:text-xs font-bold text-pine-forest">{checkedCount}/{CHECKLIST_ITEMS.length} ({progressPct}%)</span>
           </div>
           <button
             type="button"
             onClick={selectAll}
-            className="text-xs font-semibold text-pine-forest hover:text-pine-slate transition-colors"
+            className="text-[11px] sm:text-xs font-semibold text-pine-forest hover:text-pine-slate transition-colors"
           >
             Check All
           </button>
@@ -279,16 +279,16 @@ export default function ReviewChecklistModal({
         </div>
 
         {/* Footer */}
-        <div className="bg-pine-cream border-t border-pine-border px-6 py-4 flex items-center justify-between">
+        <div className="bg-pine-cream border-t border-pine-border px-4 sm:px-6 py-3.5 sm:py-4 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3">
           <button
             type="button"
             onClick={onClose}
-            className="btn-secondary text-xs"
+            className="btn-secondary text-xs justify-center"
           >
             Cancel
           </button>
 
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             {onOpenInvitation && (
               <button
                 type="button"
@@ -296,7 +296,7 @@ export default function ReviewChecklistModal({
                   handleSave('shortlisted')
                   onOpenInvitation(candidate)
                 }}
-                className="btn-secondary text-xs border-pine-forest text-pine-forest hover:bg-pine-lime/20 flex items-center gap-1.5"
+                className="btn-secondary text-xs border-pine-forest text-pine-forest hover:bg-pine-lime/20 flex items-center justify-center gap-1.5 py-2 px-3"
               >
                 Shortlist & Send Mail <ArrowRight size={13} />
               </button>
@@ -305,7 +305,7 @@ export default function ReviewChecklistModal({
               type="button"
               onClick={() => handleSave()}
               disabled={isSaving}
-              className="btn-primary text-xs flex items-center gap-1.5"
+              className="btn-primary text-xs flex items-center justify-center gap-1.5 py-2 px-3"
             >
               {isSaving ? (
                 <>

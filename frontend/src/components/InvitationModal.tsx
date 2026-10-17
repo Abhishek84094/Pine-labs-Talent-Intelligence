@@ -65,27 +65,27 @@ export default function InvitationModal({ candidates, onClose, onSuccess }: Invi
   const primaryCandidate = candidates[0]
 
   return (
-    <div className="fixed inset-0 bg-pine-forest/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-pine-border overflow-hidden">
+    <div className="fixed inset-0 bg-pine-forest/70 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4 animate-fade-in">
+      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[92vh] sm:max-h-[90vh] flex flex-col shadow-2xl border border-pine-border overflow-hidden">
         
         {/* Modal Header */}
-        <div className="bg-pine-forest-deep text-white px-6 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-pine-lime text-pine-forest flex items-center justify-center font-bold">
-              <Mail size={20} />
+        <div className="bg-pine-forest-deep text-white px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-pine-lime text-pine-forest flex items-center justify-center font-bold flex-shrink-0">
+              <Mail size={18} className="sm:w-5 sm:h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-pine-lime">Hiring Action</span>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-pine-lime">Hiring Action</span>
                 <span className="text-white/40">·</span>
-                <span className="text-xs text-white/70">{candidates.length} Candidate{candidates.length > 1 ? 's' : ''} Selected</span>
+                <span className="text-[11px] sm:text-xs text-white/70">{candidates.length} Candidate{candidates.length > 1 ? 's' : ''} Selected</span>
               </div>
-              <h2 className="text-lg font-bold text-white">Shortlist & Send Interview Invitation</h2>
+              <h2 className="text-base sm:text-lg font-bold text-white leading-snug">Shortlist & Send Interview Invitation</h2>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors flex-shrink-0"
           >
             <X size={18} />
           </button>
@@ -93,16 +93,16 @@ export default function InvitationModal({ candidates, onClose, onSuccess }: Invi
 
         {/* Success View */}
         {result ? (
-          <div className="p-8 text-center overflow-y-auto">
-            <div className="w-16 h-16 rounded-full bg-pine-lime/20 text-pine-forest mx-auto flex items-center justify-center mb-4">
-              <CheckCircle2 size={36} className="text-pine-forest" />
+          <div className="p-6 sm:p-8 text-center overflow-y-auto">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-pine-lime/20 text-pine-forest mx-auto flex items-center justify-center mb-4">
+              <CheckCircle2 size={32} className="sm:w-9 sm:h-9 text-pine-forest" />
             </div>
-            <h3 className="text-xl font-bold text-pine-forest">Shortlist Invitations Dispatched!</h3>
-            <p className="text-sm text-pine-slate-light mt-2 max-w-md mx-auto">
+            <h3 className="text-lg sm:text-xl font-bold text-pine-forest">Shortlist Invitations Dispatched!</h3>
+            <p className="text-xs sm:text-sm text-pine-slate-light mt-2 max-w-md mx-auto">
               Shortlist invitations and interview schedules have been sent to the selected candidates.
             </p>
 
-            <div className="mt-6 p-4 bg-pine-cream rounded-xl text-left border border-pine-border max-w-lg mx-auto">
+            <div className="mt-5 p-3.5 sm:p-4 bg-pine-cream rounded-xl text-left border border-pine-border max-w-lg mx-auto">
               <div className="flex items-center justify-between text-xs font-semibold text-pine-slate-light mb-2">
                 <span>RECIPIENTS</span>
                 <span className="text-pine-forest font-bold">{result.successful_count} DELIVERED</span>
@@ -110,8 +110,8 @@ export default function InvitationModal({ candidates, onClose, onSuccess }: Invi
               <div className="space-y-1.5 max-h-32 overflow-y-auto">
                 {result.results.map((r: any, idx: number) => (
                   <div key={idx} className="flex items-center justify-between text-xs py-1 border-b border-pine-border/50 last:border-0">
-                    <span className="font-medium text-pine-forest">{r.candidate_name} ({r.role})</span>
-                    <span className="text-emerald-700 font-medium text-[11px] flex items-center gap-1">
+                    <span className="font-medium text-pine-forest truncate max-w-[200px]">{r.candidate_name} ({r.role})</span>
+                    <span className="text-emerald-700 font-medium text-[11px] flex items-center gap-1 flex-shrink-0">
                       <CheckCircle2 size={12} /> Delivered
                     </span>
                   </div>
@@ -131,21 +131,21 @@ export default function InvitationModal({ candidates, onClose, onSuccess }: Invi
         ) : (
           <>
             {/* Tabs */}
-            <div className="flex border-b border-pine-border px-6 pt-3 bg-pine-cream/50">
+            <div className="flex border-b border-pine-border px-4 sm:px-6 pt-2.5 sm:pt-3 bg-pine-cream/50 overflow-x-auto scrollbar-none">
               <button
                 onClick={() => setActiveTab('compose')}
-                className={`flex items-center gap-2 pb-3 px-3 text-sm font-semibold border-b-2 transition-all ${
+                className={`flex items-center gap-2 pb-2.5 sm:pb-3 px-2 sm:px-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition-all ${
                   activeTab === 'compose'
                     ? 'border-pine-forest text-pine-forest'
                     : 'border-transparent text-pine-slate-light hover:text-pine-forest'
                 }`}
               >
                 <Edit3 size={15} />
-                Configure Schedule & Message
+                Schedule & Message
               </button>
               <button
                 onClick={() => setActiveTab('preview')}
-                className={`flex items-center gap-2 pb-3 px-3 text-sm font-semibold border-b-2 transition-all ${
+                className={`flex items-center gap-2 pb-2.5 sm:pb-3 px-2 sm:px-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition-all ${
                   activeTab === 'preview'
                     ? 'border-pine-forest text-pine-forest'
                     : 'border-transparent text-pine-slate-light hover:text-pine-forest'
@@ -303,17 +303,17 @@ export default function InvitationModal({ candidates, onClose, onSuccess }: Invi
             </div>
 
             {/* Footer */}
-            <div className="bg-pine-cream border-t border-pine-border px-6 py-4 flex items-center justify-between">
-              <span className="text-xs text-pine-slate-light flex items-center gap-1.5">
-                <ShieldCheck size={14} className="text-pine-forest" />
+            <div className="bg-pine-cream border-t border-pine-border px-4 sm:px-6 py-3.5 sm:py-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <span className="text-[11px] sm:text-xs text-pine-slate-light flex items-center gap-1.5">
+                <ShieldCheck size={14} className="text-pine-forest flex-shrink-0" />
                 Updates candidate status to <strong>Shortlisted</strong>
               </span>
 
-              <div className="flex gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="btn-secondary text-xs"
+                  className="btn-secondary text-xs flex-1 sm:flex-initial justify-center py-2 px-3"
                 >
                   Cancel
                 </button>
@@ -321,7 +321,7 @@ export default function InvitationModal({ candidates, onClose, onSuccess }: Invi
                   type="button"
                   onClick={handleSend}
                   disabled={isSending}
-                  className="btn-primary text-xs flex items-center gap-2"
+                  className="btn-primary text-xs flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2 px-3 shadow-sm"
                 >
                   {isSending ? (
                     <>
@@ -331,7 +331,7 @@ export default function InvitationModal({ candidates, onClose, onSuccess }: Invi
                   ) : (
                     <>
                       <Send size={14} />
-                      Send Shortlist Invitations ({candidates.length})
+                      Send Invitations ({candidates.length})
                     </>
                   )}
                 </button>

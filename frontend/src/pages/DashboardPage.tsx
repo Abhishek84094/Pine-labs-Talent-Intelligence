@@ -201,15 +201,15 @@ export default function DashboardPage() {
 
       {/* Page header */}
       <div className="bg-pine-forest-deep text-white">
-        <div className="max-w-6xl mx-auto px-6 py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <div className="flex items-center gap-2 text-pine-lime text-xs font-semibold mb-2 uppercase tracking-widest">
             <div className="w-4 h-px bg-pine-lime" />
             Hiring Team Portal
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">Talent Intelligence Dashboard</h1>
-              <p className="text-white/60 text-sm mt-1">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">Talent Intelligence Dashboard</h1>
+              <p className="text-white/60 text-xs sm:text-sm mt-1">
                 Review candidate evaluations, tick review checklists, and shortlist for interview rounds.
               </p>
             </div>
@@ -222,7 +222,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Success Alert Banner */}
         {actionSuccessMessage && (
           <div className="p-4 bg-pine-lime/20 border border-pine-lime text-pine-forest rounded-xl flex items-center gap-3 mb-6 animate-fade-in shadow-xs">
@@ -233,20 +233,20 @@ export default function DashboardPage() {
 
         {/* Stats Grid */}
         {stats && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
             {[
               { label: 'Total Submissions', value: stats.total, icon: Users, color: 'text-pine-forest' },
               { label: 'Evaluations Completed', value: stats.completed, icon: CheckCircle, color: 'text-pine-forest' },
               { label: 'Reviewed by Team', value: stats.reviewed ?? 0, icon: CheckSquare, color: 'text-blue-600' },
               { label: 'Shortlisted for Next Round', value: stats.shortlisted ?? 0, icon: Award, color: 'text-emerald-700' },
             ].map(({ label, value, icon: Icon, color }) => (
-              <div key={label} className="stat-card">
-                <div className="w-10 h-10 rounded-xl bg-pine-cream flex items-center justify-center flex-shrink-0">
-                  <Icon size={20} className={color} />
+              <div key={label} className="card p-3.5 sm:p-5 flex items-start gap-3 sm:gap-4">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-pine-cream flex items-center justify-center flex-shrink-0">
+                  <Icon size={18} className={`sm:w-5 sm:h-5 ${color}`} />
                 </div>
-                <div>
-                  <p className="text-2xl font-bold text-pine-forest">{value}</p>
-                  <p className="text-xs text-pine-slate-light font-medium">{label}</p>
+                <div className="min-w-0">
+                  <p className="text-xl sm:text-2xl font-bold text-pine-forest leading-tight">{value}</p>
+                  <p className="text-[11px] sm:text-xs text-pine-slate-light font-medium mt-0.5 leading-snug">{label}</p>
                 </div>
               </div>
             ))}
@@ -337,8 +337,14 @@ export default function DashboardPage() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
-                <table className="w-full">
+              {/* Mobile scroll hint */}
+              <div className="md:hidden px-4 py-2 bg-pine-cream/70 text-[11px] text-pine-slate border-b border-pine-border flex items-center justify-between">
+                <span>Swipe table sideways to view checklist & actions</span>
+                <span className="text-xs">👉</span>
+              </div>
+
+              <div className="overflow-x-auto scrollbar-thin">
+                <table className="w-full min-w-[660px]">
                   <thead>
                     <tr className="border-b border-pine-border bg-pine-cream/70 text-left">
                       {/* Checkbox select all */}
@@ -558,43 +564,52 @@ export default function DashboardPage() {
 
       {/* Floating Batch Action Bar */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 inset-x-0 mx-auto max-w-2xl px-4 z-40 animate-slide-up">
-          <div className="bg-pine-forest-deep text-white rounded-2xl shadow-2xl p-4 border border-pine-lime/30 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <span className="w-8 h-8 rounded-full bg-pine-lime text-pine-forest font-bold text-xs flex items-center justify-center">
-                {selectedIds.size}
-              </span>
-              <div>
-                <p className="text-sm font-bold text-white">
-                  {selectedIds.size} candidate{selectedIds.size > 1 ? 's' : ''} selected
-                </p>
-                <p className="text-[11px] text-white/60">
-                  Perform bulk hiring decisions or send invitation emails
-                </p>
+        <div className="fixed bottom-4 sm:bottom-6 inset-x-0 mx-auto max-w-2xl px-3 sm:px-4 z-40 animate-slide-up">
+          <div className="bg-pine-forest-deep text-white rounded-2xl shadow-2xl p-3 sm:p-4 border border-pine-lime/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-center justify-between sm:justify-start gap-3">
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-pine-lime text-pine-forest font-bold text-xs flex items-center justify-center flex-shrink-0">
+                  {selectedIds.size}
+                </span>
+                <div>
+                  <p className="text-xs sm:text-sm font-bold text-white">
+                    {selectedIds.size} candidate{selectedIds.size > 1 ? 's' : ''} selected
+                  </p>
+                  <p className="text-[10px] sm:text-[11px] text-white/60 hidden sm:block">
+                    Perform bulk hiring decisions or send invitation emails
+                  </p>
+                </div>
               </div>
+              <button
+                type="button"
+                onClick={() => setSelectedIds(new Set())}
+                className="text-xs text-white/60 hover:text-white sm:hidden px-2 py-1"
+              >
+                Clear
+              </button>
             </div>
 
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={handleBatchMarkReviewed}
-                className="btn-secondary text-xs bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center gap-1.5"
+                className="btn-secondary text-xs bg-white/10 border-white/20 text-white hover:bg-white/20 flex-1 sm:flex-initial flex items-center justify-center gap-1.5 py-2 px-3"
               >
                 <CheckSquare size={13} />
-                Mark Reviewed
+                <span className="hidden sm:inline">Mark</span> Reviewed
               </button>
               <button
                 type="button"
                 onClick={handleBatchInvite}
-                className="btn-primary text-xs bg-pine-lime text-pine-forest hover:bg-lime-400 font-bold flex items-center gap-1.5 shadow-sm"
+                className="btn-primary text-xs bg-pine-lime text-pine-forest hover:bg-lime-400 font-bold flex-1 sm:flex-initial flex items-center justify-center gap-1.5 py-2 px-3 shadow-sm"
               >
                 <Send size={13} />
-                Shortlist & Send Mail
+                Shortlist & Invite
               </button>
               <button
                 type="button"
                 onClick={() => setSelectedIds(new Set())}
-                className="text-xs text-white/50 hover:text-white ml-1"
+                className="text-xs text-white/50 hover:text-white ml-1 hidden sm:inline-block"
               >
                 Clear
               </button>

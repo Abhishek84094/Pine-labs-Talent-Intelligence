@@ -9,17 +9,17 @@ interface NavbarProps {
 // Official Pine Labs SVG logo (wordmark from plcorp-cdn.pinelabs.com)
 function PineLabsLogo({ dark = false }: { dark?: boolean }) {
   return (
-    <div className="flex items-center gap-2.5">
-      <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <div className="flex items-center gap-2 sm:gap-2.5">
+      <svg width="30" height="30" className="sm:w-[34px] sm:h-[34px] flex-shrink-0" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect width="34" height="34" rx="8" fill={dark ? '#D0F255' : '#003434'} />
         <path d="M9 24L17 9L25 24" stroke={dark ? '#003434' : '#D0F255'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
         <path d="M21 18.5H13" stroke={dark ? '#003434' : '#D0F255'} strokeWidth="2.5" strokeLinecap="round"/>
       </svg>
       <div>
-        <div className={`font-bold text-[15px] leading-none tracking-tight ${dark ? 'text-pine-forest' : 'text-white'}`}>
+        <div className={`font-bold text-sm sm:text-[15px] leading-none tracking-tight ${dark ? 'text-pine-forest' : 'text-white'}`}>
           Pine Labs
         </div>
-        <div className={`text-[9px] font-semibold tracking-[0.18em] uppercase leading-none mt-0.5 ${dark ? 'text-pine-slate' : 'text-white/50'}`}>
+        <div className={`text-[8px] sm:text-[9px] font-semibold tracking-[0.15em] sm:tracking-[0.18em] uppercase leading-none mt-0.5 ${dark ? 'text-pine-slate' : 'text-white/50'}`}>
           Talent Intelligence
         </div>
       </div>
@@ -55,12 +55,12 @@ export default function Navbar({ variant = 'landing' }: NavbarProps) {
   if (variant === 'form') {
     return (
       <header className="bg-white border-b border-pine-border sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link to="/">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+          <Link to="/" className="flex-shrink-0">
             <PineLabsLogo dark />
           </Link>
-          <Link to="/" className="text-sm text-pine-slate hover:text-pine-forest transition-colors flex items-center gap-1.5">
-            ← Back to overview
+          <Link to="/" className="text-xs sm:text-sm text-pine-slate hover:text-pine-forest transition-colors flex items-center gap-1">
+            ← <span className="hidden sm:inline">Back to overview</span><span className="sm:hidden">Overview</span>
           </Link>
         </div>
       </header>
@@ -70,13 +70,16 @@ export default function Navbar({ variant = 'landing' }: NavbarProps) {
   if (variant === 'dashboard') {
     return (
       <header className="bg-white border-b border-pine-border sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-2">
+          <Link to="/" className="flex-shrink-0">
             <PineLabsLogo dark />
           </Link>
-          <nav className="flex items-center gap-2">
-            <Link to="/" className="btn-ghost text-sm">Submit Application</Link>
-            <span className="ml-2 text-[9px] font-bold text-pine-slate uppercase tracking-widest border border-pine-border rounded-full px-2.5 py-1">
+          <nav className="flex items-center gap-1.5 sm:gap-2">
+            <Link to="/" className="btn-ghost text-xs sm:text-sm py-1.5 px-2.5 sm:px-3">
+              <span className="hidden sm:inline">Submit Application</span>
+              <span className="sm:hidden">+ Apply</span>
+            </Link>
+            <span className="text-[8px] sm:text-[9px] font-bold text-pine-slate uppercase tracking-wider sm:tracking-widest border border-pine-border rounded-full px-2 py-0.5 sm:px-2.5 sm:py-1">
               Recruiter
             </span>
           </nav>
@@ -93,7 +96,7 @@ export default function Navbar({ variant = 'landing' }: NavbarProps) {
   return (
     <>
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${navBg}`}>
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex-shrink-0">
             <PineLabsLogo dark={false} />
           </Link>
