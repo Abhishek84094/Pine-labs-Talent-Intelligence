@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import {
-  Mail, Calendar, Clock, Sparkles, CheckCircle2,
+  Mail, Calendar, CheckCircle2,
   X, AlertCircle, Send, Eye, Edit3, UserCheck, ShieldCheck
 } from 'lucide-react'
 import { submissionApi } from '../services/api'

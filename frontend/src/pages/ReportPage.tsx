@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
-  ArrowLeft, Download, AlertCircle, CheckCircle, XCircle,
+  ArrowLeft, Download, AlertCircle, XCircle,
   ChevronDown, ChevronUp, Star, AlertTriangle, HelpCircle,
-  Code, Database, Globe, Cpu, Shield, TestTube, FileText,
-  BarChart2, User, Briefcase, Loader, RefreshCw, ExternalLink,
-  Info, CheckSquare, Mail, Sparkles, Printer, FileDown, CheckCircle2
+  Code, BarChart2, User, ExternalLink,
+  Info, CheckSquare, Mail, FileDown, CheckCircle2
 } from 'lucide-react'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'

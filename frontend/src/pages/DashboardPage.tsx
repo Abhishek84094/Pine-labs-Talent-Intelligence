@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
-  BarChart2, Users, Clock, CheckCircle, XCircle, Search,
+  Users, CheckCircle, Search,
   Filter, RefreshCw, Trash2, ExternalLink, AlertCircle,
-  ChevronRight, FileText, CheckSquare, Square, Mail,
-  UserCheck, ShieldCheck, Send, Sparkles, CheckCircle2,
-  Calendar, Award
+  FileText, CheckSquare, Square, Mail,
+  Send, Sparkles, CheckCircle2,
+  Award
 } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import InvitationModal from '../components/InvitationModal'
@@ -56,7 +56,6 @@ export default function DashboardPage() {
   const [reviewFilter, setReviewFilter] = useState('')
   const [total, setTotal] = useState(0)
   const [deleteId, setDeleteId] = useState<string | null>(null)
-  const [retryingId, setRetryingId] = useState<string | null>(null)
 
   // Selection state for batch actions
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -115,18 +114,6 @@ export default function DashboardPage() {
       fetchData()
     } catch (err) {
       alert('Failed to delete submission')
-    }
-  }
-
-  const handleRetry = async (id: string) => {
-    setRetryingId(id)
-    try {
-      await submissionApi.retryEvaluation(id)
-      setTimeout(fetchData, 1000)
-    } catch (err) {
-      alert('Failed to retry evaluation')
-    } finally {
-      setRetryingId(null)
     }
   }
 
@@ -192,8 +179,6 @@ export default function DashboardPage() {
     setActionSuccessMessage(msg)
     setTimeout(() => setActionSuccessMessage(''), 4000)
   }
-
-  const selectedCandidates = submissions.filter(s => selectedIds.has(s.id))
 
   return (
     <div className="min-h-screen bg-pine-cream pb-24">
@@ -641,7 +626,7 @@ export default function DashboardPage() {
         <ReviewChecklistModal
           candidate={checklistCandidate}
           onClose={() => setChecklistCandidate(null)}
-          onSuccess={(updatedSub) => {
+          onSuccess={() => {
             showSuccess(`Review checklist saved for ${checklistCandidate.full_name}`)
             fetchData()
           }}

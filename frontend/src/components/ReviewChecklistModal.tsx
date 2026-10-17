@@ -2,7 +2,7 @@ import { useState } from 'react'
 import {
   CheckSquare, Square, CheckCircle2, UserCheck, X,
   Save, AlertCircle, FileText, Code, Shield, HelpCircle,
-  Clock, ArrowRight
+  ArrowRight
 } from 'lucide-react'
 import { submissionApi } from '../services/api'
 import type { SubmissionListItem } from '../types'
@@ -201,7 +201,6 @@ export default function ReviewChecklistModal({
           <div className="space-y-2.5">
             {CHECKLIST_ITEMS.map((item) => {
               const isChecked = Boolean(checklist[item.id])
-              const Icon = item.icon
 
               return (
                 <div

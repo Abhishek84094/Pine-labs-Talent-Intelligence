@@ -34,8 +34,6 @@ export default function Navbar({ variant = 'landing' }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const location = useLocation()
 
-  const isLanding = variant === 'landing'
-  const isDashboard = variant === 'dashboard'
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)

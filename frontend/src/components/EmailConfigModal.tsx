@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import {
   Mail, ShieldCheck, CheckCircle2, AlertCircle, X,
-  Key, Server, Send, ExternalLink, HelpCircle, Eye, EyeOff
+  Send, ExternalLink, Eye, EyeOff
 } from 'lucide-react'
 import { emailApi } from '../services/api'
 
