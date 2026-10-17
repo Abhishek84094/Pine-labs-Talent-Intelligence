@@ -5,7 +5,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.core.config import get_settings
 from app.db.database import init_db
@@ -74,7 +75,7 @@ app.add_middleware(
         "http://localhost:5173",
         "http://localhost:5174",
     ],
-    allow_origin_regex=r"https://.*\.vercel\.app",
+    allow_origin_regex=r"https://.*(\.vercel\.app|\.onrender\.com)",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -94,11 +95,27 @@ async def global_exception_handler(request, exc):
     )
 
 
-@app.get("/", include_in_schema=False)
-async def root():
-    return {
-        "name": settings.app_name,
-        "version": settings.app_version,
-        "docs": "/api/docs",
-        "status": "running",
-    }
+# Optional: Mount frontend static build if dist exists (single-service deployment)
+dist_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist"))
+if os.path.isdir(dist_dir):
+    assets_dir = os.path.join(dist_dir, "assets")
+    if os.path.isdir(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def serve_spa(full_path: str):
+        if full_path.startswith("api"):
+            return JSONResponse(status_code=404, content={"detail": "API endpoint not found"})
+        target_file = os.path.join(dist_dir, full_path)
+        if full_path and os.path.isfile(target_file):
+            return FileResponse(target_file)
+        return FileResponse(os.path.join(dist_dir, "index.html"))
+else:
+    @app.get("/", include_in_schema=False)
+    async def root():
+        return {
+            "name": settings.app_name,
+            "version": settings.app_version,
+            "docs": "/api/docs",
+            "status": "running",
+        }
